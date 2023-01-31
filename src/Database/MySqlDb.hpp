@@ -5,8 +5,6 @@
 #include <fstream>
 #include <memory>
 #include <shared_mutex>
-// #include <typeinfo>
-// #include <typeindex>
 #include <unordered_map>
 #include <time.h>
 #include <sstream>
@@ -16,8 +14,9 @@ namespace dtb{
     typedef enum {
         NO_COMMAND_FIELD = 400,
         COMMAND_NOT_FOUND = 404,
-        OK = 200,
         SQL_EXCEPTION = 401,
+        OK = 200,
+        NO_RESULT = 402,
     }CODE;
     class MySqlDb : public IDatabase {
         public:
@@ -45,7 +44,15 @@ namespace dtb{
 
             // insert 
             nlohmann::json insert(const nlohmann::json &);
-            void binder(const nlohmann::json &, std::unique_ptr<mysqlx::abi2::r0::TableInsert> &);
+
+            // update
+            nlohmann::json update(const nlohmann::json &);
+            void binder(const nlohmann::json &, mysqlx::abi2::r0::TableUpdate &);
+            void setValueUpdate(const nlohmann::json &, mysqlx::abi2::r0::TableUpdate &);
+
+            // remove
+            nlohmann::json remove(const nlohmann::json &);
+            void binder(const nlohmann::json &, mysqlx::abi2::r0::TableRemove &);
 
             // get timestamps value
             std::string getTimeStamp(int);

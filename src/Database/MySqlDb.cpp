@@ -6,6 +6,8 @@ dtb::MySqlDb::MySqlDb(const std::string &filepath): _filepath(filepath), _sessio
 {
     _functions["select"] = &MySqlDb::select;
     _functions["insert"] = &MySqlDb::insert;
+    _functions["update"] = &MySqlDb::update;
+    _functions["remove"] = &MySqlDb::remove;
 }
 
 bool dtb::MySqlDb::Connect()
@@ -38,6 +40,7 @@ bool dtb::MySqlDb::Connect()
         _session = std::make_unique<mysqlx::Session>(mysqlx::Session(host, port, user, password));
         _db = std::make_unique<mysqlx::Schema>(_session->getSchema(database));
         envF.close();
+        return true;
     } catch (const mysqlx::Error &e) {
         std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
         exit(EXIT_FAILURE);
@@ -131,6 +134,13 @@ json dtb::MySqlDb::select(const json &query)
         if (query.find("orderBy") != query.end())
             request->orderBy(std::string(query["orderBy"]));
 
+
+        if (query.find("limit") != query.end()) {
+            request->limit((int)query["data"]);
+            if (query.find("offset") != query.end())
+                request->offset((int)query["offset"]);
+        }
+
         binder(query, request);
         auto resultRaw = request->execute();
         auto &columns = resultRaw.getColumns();
@@ -148,6 +158,12 @@ json dtb::MySqlDb::select(const json &query)
             {"message", e.what()}
         });
     } catch (const json::out_of_range &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    } catch (const json::type_error &e) {
         std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
         return (json{
             {"code", e.id},
@@ -195,15 +211,78 @@ json dtb::MySqlDb::insert(const json &query)
             request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::forward<std::vector<std::string>>(query["fields"])));
         else
             request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::string(query["fields"])));
-        // binder(query, request);
         request->values(std::forward<std::vector<std::string>>(query["data"]));
         auto resultRequest = request->execute();
-        std::cout << resultRequest.getAffectedItemsCount() << std::endl;
-        return (json{
+
+        return json{
             {"code", OK},
             {"Count", resultRequest.getAffectedItemsCount()},
             {"Message", "succesfully inserted valuee"}
+        };
+    } catch (const mysqlx::Error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", SQL_EXCEPTION},
+            {"message", e.what()}
         });
+    } catch (const json::out_of_range &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return json{
+            {"code", e.id},
+            {"message", e.what()}
+        };
+    } catch (const json::type_error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    }
+}
+
+void dtb::MySqlDb::binder(const json &query, mysqlx::abi2::r0::TableUpdate &request)
+{
+    // request->rows()
+    if (query.find("data") == query.end())
+        return;
+    for (const auto &v: query["data"]) {
+        std::cout << "query is " << v << std::endl;
+        if (v["value"].is_boolean())
+            request.bind(std::string(v["label"]), (bool)v["value"]);
+        else if (v["value"].is_string())
+            request.bind(std::string(v["label"]), std::string(v["value"]));
+        else if (v["value"].is_number_integer())
+            request.bind(std::string(v["label"]), (int)v["value"]);
+        else if (v["value"].is_number_unsigned())
+            request.bind(std::string(v["label"]), (unsigned int)v["value"]);
+        else if (v["value"].is_number_float())
+            request.bind(std::string(v["label"]), (double)v["value"]);
+    }
+}
+
+json dtb::MySqlDb::update(const json &query)
+{
+    try {
+        mysqlx::Table table = _db->getTable(std::string(query["table"]));
+        mysqlx::abi2::r0::TableUpdate request = table.update();
+
+        setValueUpdate(query, request);
+        request = request.where(std::string(query["where"]));
+        if (query.find("orderBy") != query.end())
+            request = request.orderBy(std::string(query["orderBy"]));
+    
+        if (query.find("limit") != query.end())
+            request.limit((int)query["data"]);
+
+        binder(query, request);
+
+        auto result = request.execute();
+
+        return json{
+            {"code", ((result.getAffectedItemsCount()) ? OK : NO_RESULT)},
+            {"Count", result.getAffectedItemsCount()},
+            {"Message", ((result.getAffectedItemsCount()) ? "succesfully updated value" : "The search filters did not return any result")}
+        };
     } catch (const mysqlx::Error &e) {
         std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
         return (json{
@@ -225,24 +304,81 @@ json dtb::MySqlDb::insert(const json &query)
     }
 }
 
-void dtb::MySqlDb::binder(const json &query, std::unique_ptr<mysqlx::abi2::r0::TableInsert> &request)
+void dtb::MySqlDb::setValueUpdate(const json &query, mysqlx::abi2::r0::TableUpdate &request)
 {
-    // request->rows()
+    for (std::size_t i = 0; i < query["set"].size(); ++i) {
+        const json &v = query["set"][i];
+        if (v["value"].is_boolean())
+            request.set(std::string(v["label"]), (bool)v["value"]);
+        else if (v["value"].is_string())
+            request.set(std::string(v["label"]), std::string(v["value"]));
+        else if (v["value"].is_number_integer())
+            request.set(std::string(v["label"]), (int)v["value"]);
+        else if (v["value"].is_number_unsigned())
+            request.set(std::string(v["label"]), (unsigned int)v["value"]);
+        else if (v["value"].is_number_float())
+            request.set(std::string(v["label"]), (double)v["value"]);
+    }
+}
+
+json dtb::MySqlDb::remove(const json &query)
+{
+    try {
+        mysqlx::Table table = _db->getTable(std::string(query["table"]));
+        mysqlx::abi2::r0::TableRemove request = table.remove();
+
+        request = request.where(std::string(query["where"]));
+        if (query.find("orderBy") != query.end())
+            request = request.orderBy(std::string(query["orderBy"]));
+    
+        if (query.find("limit") != query.end())
+            request.limit((int)query["data"]);
+
+        binder(query, request);
+
+        auto result = request.execute();
+
+        return json{
+            {"code", ((result.getAffectedItemsCount()) ? OK : NO_RESULT)},
+            {"Count", result.getAffectedItemsCount()},
+            {"Message", ((result.getAffectedItemsCount()) ? "succesfully removed value" : "The search filters did not return any result")}
+        };
+    } catch (const mysqlx::Error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", SQL_EXCEPTION},
+            {"message", e.what()}
+        });
+    } catch (const json::out_of_range &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    } catch (const json::type_error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    }
+}
+
+void dtb::MySqlDb::binder(const json &query, mysqlx::abi2::r0::TableRemove &request)
+{
     if (query.find("data") == query.end())
         return;
-    std::cout << "request is (((((((" << query["data"] << ")))))))" << std::endl;
-    for (int i = 0; i < query["data"].size(); ++i) {
-        const json & v = query["data"][i];
-        std::cout << "request is (((((((" << v << ")))))))" << std::endl;
-        if (v.is_boolean())
-            request->values(i, (bool)v);
-        else if (v.is_string())
-            request->values(i, std::string(v));
-        else if (v.is_number_integer())
-            request->values(i, (int)v);
-        else if (v.is_number_unsigned())
-            request->values(i, (unsigned int)v);
-        else if (v.is_number_float())
-            request->values(i, (double)v);
+    for (const auto &v: query["data"]) {
+        std::cout << "query is " << v << std::endl;
+        if (v["value"].is_boolean())
+            request.bind(std::string(v["label"]), (bool)v["value"]);
+        else if (v["value"].is_string())
+            request.bind(std::string(v["label"]), std::string(v["value"]));
+        else if (v["value"].is_number_integer())
+            request.bind(std::string(v["label"]), (int)v["value"]);
+        else if (v["value"].is_number_unsigned())
+            request.bind(std::string(v["label"]), (unsigned int)v["value"]);
+        else if (v["value"].is_number_float())
+            request.bind(std::string(v["label"]), (double)v["value"]);
     }
 }

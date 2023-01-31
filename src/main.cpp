@@ -82,17 +82,68 @@ int main(void)
     // tmp["where"] = "Tag = :param1";
     tmp["fields"] = fields;
     tmp["orderBy"] = "Tag Desc";
-    tmp["data"] = data;
+    // tmp["data"] = data;
 
     json insertJson;
     insertJson["command"] = "insert";
     insertJson["table"] = "clienTest";
     insertJson["fields"] = fields2;
     insertJson["data"] = data2;
-    auto result1 = sqldtb->executeQuery(insertJson);
+    // auto result1 = sqldtb->executeQuery(insertJson);
     // std::cout << result1 << std::endl;
-    auto result = sqldtb->executeQuery(tmp);
-    std::cout << result << std::endl;
+
+    std::vector<json> setToUpdate;
+    std::vector<json> data3;
+
+    data3.push_back(json{
+        {"label", "param1"},
+        {"value", "testeurDu42"}
+    });
+
+    setToUpdate.push_back(json{
+        {"label", "CPassword"},
+        {"value", "28293031"}
+    });
+
+    setToUpdate.push_back(json{
+        {"label", "testInt"},
+        {"value", 69}
+    });
+
+    json updateJson;
+    updateJson["command"] = "update";
+    updateJson["table"] = "clienTest";
+    updateJson["set"] = setToUpdate;
+    updateJson["where"] = "Pseudo = :param1";
+    updateJson["data"] = data3;
+
+    // auto result2 = sqldtb->executeQuery(updateJson);
+    // std::cout << result2 << std::endl;
+
+    std::vector<json> data4;
+
+    data4.push_back({
+        {"label", "pseudo"},
+        {"value", "testeurdu42"}
+    });
+
+    data4.push_back({
+        {"label", "tag"},
+        {"value", 10}
+    });
+
+    json removeJson;
+    removeJson["command"] = "remove";
+    removeJson["table"] = "clienTest";
+    removeJson["set"] = setToUpdate;
+    removeJson["where"] = "Pseudo = :pseudo AND Tag = :tag";
+    removeJson["data"] = data4;
+
+    auto result3 = sqldtb->executeQuery(removeJson);
+    std::cout << result3 << std::endl;
+
+    // auto result = sqldtb->executeQuery(tmp);
+    // std::cout << result << std::endl;
     // const char test[] = {15,1,30,19,56,7};
     // std::cout << result["data"][0]["DateCreation"].type_name() << std::endl;;
     // time_t test = result["data"][0]["UNIX_TIMESTAMP(`DateCreation`)"];
