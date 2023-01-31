@@ -34,3 +34,5 @@
 build
 .vscode
 tmp.txt
+utils
+Config.h

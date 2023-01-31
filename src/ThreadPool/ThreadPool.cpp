@@ -16,21 +16,19 @@ void thp::ThreadPool::run()
 {
     while (true) {
         std::atomic<bool> popped = false;
+        std::function<void()> toLaunch;
         {
-            std::function<void()> toLaunch;
-            {
-                std::unique_lock<std::shared_mutex> lock(_mutex);
-                _cond.wait(lock, [this, &popped, &toLaunch](){
-                    popped = _tasks.pop(toLaunch);
-                    return _cancelThread.load() || _stopThread.load() || popped.load();
-                });
-            }
-            // std::cout << std::this_thread::get_id() << std::endl;
-            if (_cancelThread.load() || (_stopThread.load() && !popped)) {
-                return;
-            } else {
-                toLaunch();
-            }
+            std::unique_lock<std::shared_mutex> lock(_mutex);
+            _cond.wait(lock, [this, &popped, &toLaunch](){
+                popped = _tasks.pop(toLaunch);
+                return _cancelThread.load() || _stopThread.load() || popped.load();
+            });
+        }
+        // std::cout << std::this_thread::get_id() << std::endl;
+        if (_cancelThread.load() || (_stopThread.load() && !popped)) {
+            return;
+        } else {
+            toLaunch();
         }
     }
 }
