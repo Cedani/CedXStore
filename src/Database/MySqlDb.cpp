@@ -5,6 +5,7 @@ using nlohmann::json;
 dtb::MySqlDb::MySqlDb(const std::string &filepath): _filepath(filepath), _session(nullptr)
 {
     _functions["select"] = &MySqlDb::select;
+    _functions["insert"] = &MySqlDb::insert;
 }
 
 bool dtb::MySqlDb::Connect()
@@ -117,7 +118,7 @@ json dtb::MySqlDb::select(const json &query)
         std::string typeSelect(query["fields"].type_name());
 
         // whether to select some fields, or all, or just one fields
-        if (typeSelect.find("array") != typeSelect.npos)
+        if (query["fields"].is_array())
             request = std::make_unique<mysqlx::abi2::r0::TableSelect>(table.select(std::forward<std::vector<std::string>>(query["fields"])));
         else
             request = std::make_unique<mysqlx::abi2::r0::TableSelect>(table.select(std::string(query["fields"])));
@@ -181,4 +182,67 @@ std::string dtb::MySqlDb::getTimeStamp(int v)
     std::stringstream out;
     out << std::put_time(timeStruct, "%d/%m/%Y %H:%M:%S");
     return (out.str()); 
+}
+
+
+json dtb::MySqlDb::insert(const json &query)
+{
+    try {
+        mysqlx::Table table = _db->getTable(std::string(query["table"]));
+        std::unique_ptr<mysqlx::abi2::r0::TableInsert> request;
+
+        if (query["fields"].is_array())
+            request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::forward<std::vector<std::string>>(query["fields"])));
+        else
+            request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::string(query["fields"])));
+        // binder(query, request);
+        request->values(std::forward<std::vector<std::string>>(query["data"]));
+        auto resultRequest = request->execute();
+        std::cout << resultRequest.getAffectedItemsCount() << std::endl;
+        return (json{
+            {"code", OK},
+            {"Count", resultRequest.getAffectedItemsCount()},
+            {"Message", "succesfully inserted valuee"}
+        });
+    } catch (const mysqlx::Error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", SQL_EXCEPTION},
+            {"message", e.what()}
+        });
+    } catch (const json::out_of_range &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    } catch (const json::type_error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    }
+}
+
+void dtb::MySqlDb::binder(const json &query, std::unique_ptr<mysqlx::abi2::r0::TableInsert> &request)
+{
+    // request->rows()
+    if (query.find("data") == query.end())
+        return;
+    std::cout << "request is (((((((" << query["data"] << ")))))))" << std::endl;
+    for (int i = 0; i < query["data"].size(); ++i) {
+        const json & v = query["data"][i];
+        std::cout << "request is (((((((" << v << ")))))))" << std::endl;
+        if (v.is_boolean())
+            request->values(i, (bool)v);
+        else if (v.is_string())
+            request->values(i, std::string(v));
+        else if (v.is_number_integer())
+            request->values(i, (int)v);
+        else if (v.is_number_unsigned())
+            request->values(i, (unsigned int)v);
+        else if (v.is_number_float())
+            request->values(i, (double)v);
+    }
 }

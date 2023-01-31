@@ -42,7 +42,11 @@ namespace dtb{
             // select
             nlohmann::json select(const nlohmann::json &);
             void binder(const nlohmann::json &, std::unique_ptr<mysqlx::abi2::r0::TableSelect> &);
-            // nlohmann::json select(const std::string &);
+
+            // insert 
+            nlohmann::json insert(const nlohmann::json &);
+            void binder(const nlohmann::json &, std::unique_ptr<mysqlx::abi2::r0::TableInsert> &);
+
             // get timestamps value
             std::string getTimeStamp(int);
     };

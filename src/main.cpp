@@ -52,12 +52,23 @@ int main(void)
     sqldtb->Connect();
 
     std::vector<std::string> fields;
+    std::vector<std::string> fields2;
     std::vector<json> data;
+    std::vector<std::string> data2;
 
     data.push_back({
         {"label", "param1"},
         {"value", 7}
     });
+
+    fields2.push_back("Pseudo");
+    fields2.push_back("CPassword");
+    fields2.push_back("testInt");
+
+
+    data2.push_back("testeurdu41");
+    data2.push_back("24252627");
+    data2.push_back("15");
 
     fields.push_back("Pseudo");
     fields.push_back("Tag");
@@ -68,14 +79,22 @@ int main(void)
     nlohmann::json tmp;
     tmp["command"] = "select";
     tmp["table"] = "clienTest";
-    tmp["where"] = "Tag = :param1";
+    // tmp["where"] = "Tag = :param1";
     tmp["fields"] = fields;
-    tmp["orderBy"] = "Pseudo Desc";
+    tmp["orderBy"] = "Tag Desc";
     tmp["data"] = data;
+
+    json insertJson;
+    insertJson["command"] = "insert";
+    insertJson["table"] = "clienTest";
+    insertJson["fields"] = fields2;
+    insertJson["data"] = data2;
+    auto result1 = sqldtb->executeQuery(insertJson);
+    // std::cout << result1 << std::endl;
     auto result = sqldtb->executeQuery(tmp);
+    std::cout << result << std::endl;
     // const char test[] = {15,1,30,19,56,7};
     // std::cout << result["data"][0]["DateCreation"].type_name() << std::endl;;
-    std::cout << result << std::endl;
     // time_t test = result["data"][0]["UNIX_TIMESTAMP(`DateCreation`)"];
     // auto tmpTime = localtime(&test);
     // std::cout << std::put_time(tmpTime, "%d-%m-%Y %H-%M-%S") << std::endl;
