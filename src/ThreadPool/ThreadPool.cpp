@@ -20,12 +20,12 @@ void thp::ThreadPool::run()
         {
             std::unique_lock<std::shared_mutex> lock(_mutex);
             _cond.wait(lock, [this, &popped, &toLaunch](){
-                popped = _tasks.pop(toLaunch);
+                popped.store(_tasks.pop(toLaunch));
                 return _cancelThread.load() || _stopThread.load() || popped.load();
             });
         }
         // std::cout << std::this_thread::get_id() << std::endl;
-        if (_cancelThread.load() || (_stopThread.load() && !popped)) {
+        if (_cancelThread.load() || (_stopThread.load() && !popped.load())) {
             return;
         } else {
             toLaunch();
@@ -38,13 +38,13 @@ void thp::ThreadPool::init()
     // _isRunning = true;
     // std::call_once(_once, [this](){
         // std::unique_lock<std::shared_mutex> lock(_mutex);
-        std::shared_lock<std::shared_mutex> lock(_mutex);
-        for (std::size_t i = 0; i < _size; ++i) {
-            std::thread th1(&ThreadPool::run, this);
-            std::cout << th1.get_id() << std::endl;
-            _threads.push_back(std::move(th1));
-        }
-        _isRunning = true;
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+    for (std::size_t i = 0; i < _size; ++i) {
+        std::thread th1(&ThreadPool::run, this);
+        // std::cout << th1.get_id() << std::endl;
+        _threads.push_back(std::move(th1));
+    }
+    _isRunning.store(true);
 }
 
 bool thp::ThreadPool::running() const
@@ -87,5 +87,5 @@ void thp::ThreadPool::terminate()
     }
     for (auto &t: _threads) 
         t.join();
-    std::cout << "Terminated" << std::endl;
+    // std::cout << "Terminated" << std::endl;
 }

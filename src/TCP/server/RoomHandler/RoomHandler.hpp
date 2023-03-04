@@ -12,7 +12,12 @@ namespace rmh {
     
     typedef enum {
         WAITING,
-        LAUNCHING
+        LAUNCHING,
+        ROOM_FULL = 300,
+        NOT_IN_ROOM = 400,
+        WRONG_CODE = 401,
+        NOT_FOUND = 404,
+        ROOM_SUCCESS = 200
     }roomStatus;
 
     typedef struct avatar_s {
@@ -28,8 +33,10 @@ namespace rmh {
     }avatar;
 
     typedef struct client_s {
-        client_s(const tcp::Connection &con, const std::string &name = "Player", avatar av = avatar()): _con(con), _name(name), _avatar(av){}
-        const tcp::Connection &_con;
+        client_s(const std::string &name = "Player", avatar av = avatar()): _name(name), _avatar(av){}
+        // client_s(const struct client_s &) = delete;
+        // struct client_s & operator=(const struct client_s &) = delete;
+        // const tcp::Connection &_con;
         std::string _name;
         avatar _avatar;
     }client;
@@ -50,27 +57,34 @@ namespace rmh {
             RoomHandler();
             ~RoomHandler();
 
-    
-        public:
-            //GETTER
-            const room *getRoom(int id) const;
-            const room *getRoom(const std::string &name) const;
-            room *getRoom(const std::string &name);
-            room *getRoom(int id);
-            const std::string getRoomInfo(const std::string &);
-            const std::string getRoomInfo(int);
-
         public:
             // ROOM EDITOR
-            const room & createNewRoom(int maxc, client &&cli, const std::string &roomName = "", const std::string &roomCode="");
-            int addToRoom(int id, client &&cli, const std::string &code="");
-            int addToRoom(const std::string &name, client &&cli, const std::string &code="");
-            void deleteRoom(int id);
-            void deleteRoom(const std::string &);
-            int quitRoom(int id);
-            int quitRoom(const std::string &);
+            nlohmann::json createNewRoom(int maxc, const client &cli, const std::string &roomName = "", const std::string &roomCode="");
+            // nlohmann::json addToRoom(int id, client &cli, const std::string &code="");
+            nlohmann::json addToRoom(const std::string &name, const client &cli, const std::string &code="");
+            // nlohmann::json quitRoom(int id);
+            nlohmann::json quitRoom(const std::string &, const std::string &);
+            // nlohmann::json quitRoom(const std::string &, int);
+
+        public:
+            //GETTER
+            // const room *getRoom(int id) const;
+            const room *getRoom(const std::string &name) const;
+            room *getRoom(const std::string &name);
+            // room *getRoom(int id);
+            const nlohmann::json getRoomInfo(const std::string &);
+            // const nlohmann::json getRoomInfo(int);
+
+
+
         private:
             mutable std::shared_mutex _mutex;
             std::vector<room> _rooms;
+            int _idCount;
+
+        private:
+            // PRIVATE FUNCTION
+            void deleteRoom(int id);
+            void deleteRoom(const std::string &);
     };
 }

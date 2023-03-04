@@ -19,7 +19,7 @@ namespace thp {
 
 
             template<class T, class... Args>
-            void addNewTask(T&&func, Args&&... args){
+            void addNewTask(T &&func, Args&&... args){
                 {
                     std::shared_lock<std::shared_mutex> lock(_mutex);
                     if (!_isRunning) {
@@ -27,16 +27,14 @@ namespace thp {
                         return;
                     }
                 }
-                auto toLaunch = std::bind(&func, std::forward<Args>(args)...);
-                _tasks.emplace_back([&toLaunch, &args...](){
-                    toLaunch();
-                });
+                auto toLaunch = std::bind(std::forward<T>(func), std::forward<Args>(args)...);
+                _tasks.emplace_back(toLaunch);
                 _cond.notify_one();
-                std::cout << "bind" << std::endl;
+                // std::cout << "bind" << std::endl;
             };
 
             template<class T, class C, class...Args>
-            void addClassTask(T &&func, C &obj, Args&&... args) {
+            void addClassTask(T &&func, C *obj, Args&&... args) {
                 {
                     std::shared_lock<std::shared_mutex> lock(_mutex);
                     if (!_isRunning) {
@@ -44,12 +42,10 @@ namespace thp {
                         return;
                     }
                 }
-                auto toLaunch = std::bind(func, obj, std::forward<Args>(args)...);
-                _tasks.emplace_back([&toLaunch, &args...](){
-                    toLaunch();
-                });
+                auto toLaunch = std::bind(std::forward<T>(func), std::ref(*obj), std::forward<Args>(args)...);
+                _tasks.emplace_back(toLaunch);
                 _cond.notify_one();
-                std::cout << "bind" << std::endl;
+                // std::cout << "bind" << std::endl;
             };
 
             bool running() const;

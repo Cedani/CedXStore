@@ -134,12 +134,13 @@ json dtb::MySqlDb::select(const json &query)
         if (query.find("orderBy") != query.end())
             request->orderBy(std::string(query["orderBy"]));
 
-
-        if (query.find("limit") != query.end()) {
+        // whether there is a limit
+        if (query.find("limit") != query.end())
             request->limit((int)query["data"]);
-            if (query.find("offset") != query.end())
-                request->offset((int)query["offset"]);
-        }
+        
+        // whether there is an offset
+        if (query.find("offset") != query.end())
+            request->offset((int)query["offset"]);
 
         binder(query, request);
         auto resultRaw = request->execute();
@@ -179,15 +180,15 @@ void dtb::MySqlDb::binder(const json &query, std::unique_ptr<mysqlx::abi2::r0::T
     for (const auto &v: query["data"]) {
         std::cout << "query is " << v << std::endl;
         if (v["value"].is_boolean())
-            request->bind(std::string(v["label"]), (bool)v["value"]);
+            request->bind(std::string(v["label"]), v["value"].get<bool>());
         else if (v["value"].is_string())
-            request->bind(std::string(v["label"]), std::string(v["value"]));
+            request->bind(std::string(v["label"]), v["value"].get<std::string>());
         else if (v["value"].is_number_integer())
-            request->bind(std::string(v["label"]), (int)v["value"]);
+            request->bind(std::string(v["label"]), v["value"].get<int>());
         else if (v["value"].is_number_unsigned())
-            request->bind(std::string(v["label"]), (unsigned int)v["value"]);
+            request->bind(std::string(v["label"]), v["value"].get<unsigned int>());
         else if (v["value"].is_number_float())
-            request->bind(std::string(v["label"]), (double)v["value"]);
+            request->bind(std::string(v["label"]), v["value"].get<double>());
     }
 }
 
@@ -248,15 +249,15 @@ void dtb::MySqlDb::binder(const json &query, mysqlx::abi2::r0::TableUpdate &requ
     for (const auto &v: query["data"]) {
         std::cout << "query is " << v << std::endl;
         if (v["value"].is_boolean())
-            request.bind(std::string(v["label"]), (bool)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<bool>());
         else if (v["value"].is_string())
-            request.bind(std::string(v["label"]), std::string(v["value"]));
+            request.bind(std::string(v["label"]), v["value"].get<std::string>());
         else if (v["value"].is_number_integer())
-            request.bind(std::string(v["label"]), (int)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<int>());
         else if (v["value"].is_number_unsigned())
-            request.bind(std::string(v["label"]), (unsigned int)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<unsigned int>());
         else if (v["value"].is_number_float())
-            request.bind(std::string(v["label"]), (double)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<double>());
     }
 }
 
@@ -309,15 +310,15 @@ void dtb::MySqlDb::setValueUpdate(const json &query, mysqlx::abi2::r0::TableUpda
     for (std::size_t i = 0; i < query["set"].size(); ++i) {
         const json &v = query["set"][i];
         if (v["value"].is_boolean())
-            request.set(std::string(v["label"]), (bool)v["value"]);
+            request.set(std::string(v["label"]), v["value"].get<bool>());
         else if (v["value"].is_string())
-            request.set(std::string(v["label"]), std::string(v["value"]));
+            request.set(std::string(v["label"]), v["value"].get<std::string>());
         else if (v["value"].is_number_integer())
-            request.set(std::string(v["label"]), (int)v["value"]);
+            request.set(std::string(v["label"]), v["value"].get<int>());
         else if (v["value"].is_number_unsigned())
-            request.set(std::string(v["label"]), (unsigned int)v["value"]);
+            request.set(std::string(v["label"]), v["value"].get<unsigned int>());
         else if (v["value"].is_number_float())
-            request.set(std::string(v["label"]), (double)v["value"]);
+            request.set(std::string(v["label"]), v["value"].get<double>());
     }
 }
 
@@ -371,14 +372,14 @@ void dtb::MySqlDb::binder(const json &query, mysqlx::abi2::r0::TableRemove &requ
     for (const auto &v: query["data"]) {
         std::cout << "query is " << v << std::endl;
         if (v["value"].is_boolean())
-            request.bind(std::string(v["label"]), (bool)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<bool>());
         else if (v["value"].is_string())
-            request.bind(std::string(v["label"]), std::string(v["value"]));
+            request.bind(std::string(v["label"]), v["value"].get<std::string>());
         else if (v["value"].is_number_integer())
-            request.bind(std::string(v["label"]), (int)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<int>());
         else if (v["value"].is_number_unsigned())
-            request.bind(std::string(v["label"]), (unsigned int)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<unsigned int>());
         else if (v["value"].is_number_float())
-            request.bind(std::string(v["label"]), (double)v["value"]);
+            request.bind(std::string(v["label"]), v["value"].get<double>());
     }
 }

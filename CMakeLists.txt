@@ -28,6 +28,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+# find_package(Boost COMPONENTS thread system REQUIRED)
+find_package(Threads)
+
+
 
 # find_package(Threads CONFIG REQUIRED)
 # find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
@@ -39,9 +43,10 @@ set(PROJECT_SRC
 
 add_subdirectory(src/Threadpool)
 add_subdirectory(src/Database)
+add_subdirectory(src/TCP/server)
 
 
 add_executable(Arcade ${PROJECT_SRC})
-target_link_libraries(Arcade PRIVATE LibThread LibDatabase ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Arcade PRIVATE LibDatabase LibTcpServer LibThread ${CMAKE_THREAD_LIBS_INIT})
 # target_link_libraries(Arcade PRIVATE LibDatabase ${MYSQLPP32})
 

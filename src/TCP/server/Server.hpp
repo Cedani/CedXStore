@@ -11,7 +11,8 @@ using nlohmann::json;
 
 namespace tcp
 {
-    class Server : public boost::enable_shared_from_this<Server> {
+
+    class Server : public std::enable_shared_from_this<Server> {
         public:
             // PUBLIC FUNCTIONS
             Server(int port);
@@ -22,31 +23,32 @@ namespace tcp
 
 
         private:
-            boost::thread _threadContext;
-            boost::asio::io_context _io;
-            boost::asio::ip::tcp::acceptor _acceptor;
-            std::vector<boost::shared_ptr<Connection>> _clients;
-            std::unordered_map<std::string, void (Server::*)(const json &, boost::shared_ptr<Connection> &)> _routes;
+            std::thread _threadContext;
+            asio::io_context _io;
+            asio::ip::tcp::acceptor _acceptor;
+            std::vector<std::shared_ptr<Connection>> _clients;
+            std::unordered_map<std::string, void (Server::*)(json, Connection &)> _routes;
             thp::ThreadPool _threadPool;
             rmh::RoomHandler _roomHandler;
             std::shared_mutex _mutex;
+            std::condition_variable_any _waiter;
 
 
         private:
             // ROUTES RESPONSES
-            void badCommand(boost::shared_ptr<Connection> &);
-            void noRouteFound(boost::shared_ptr<Connection> &);
-            void createRoom(const json &, boost::shared_ptr<Connection> &);
-            void addClientToRoom(const json &, boost::shared_ptr<Connection> &);
-            void quitRoom(const json &, boost::shared_ptr<Connection> &);
-            void deleteRoom(const json &, boost::shared_ptr<Connection> &);
+            void badCommand(Connection &);
+            void noRouteFound(Connection &);
+            void createRoom(json, Connection &);
+            void addClientToRoom(json , Connection &);
+            void quitRoom(json, Connection &);
 
 
         private:
             // PRIVATE FUNCTIONS
             void broadcastToAll(const std::string &msg);
-            void broadcastToAll(const std::string &msg, rmh::room *);
+            // void broadcastToAll(const std::string &msg, rmh::room *);
             void waitConnections();
-            void handleCommand(boost::shared_ptr<Connection> &);
+            void handleCommand(Connection &);
+            void missingArguments(Connection &, const std::string &);
     };
 }

@@ -19,7 +19,6 @@ namespace thp {
 
             bool empty() {
                 std::shared_lock<std::shared_mutex> lock(_mtx);
-                std::cout << "je rentre ici" << std::endl;
                 return _queue.empty();
             }
 
