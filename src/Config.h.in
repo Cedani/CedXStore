@@ -1,5 +1,5 @@
 #pragma once
 
-#define LIB_THREAD_PATH "@LIB_THREAD_PATH@"
+// #define LIB_THREAD_PATH "@LIB_THREAD_PATH@"
 #define LIB_DTB_ENV_PATH "@LIB_DTB_ENV_PATH@"
-#define LIB_MYSQL_DLL "@LIB_MYSQL_DLL@"
+// #define LIB_MYSQL_DLL "@LIB_MYSQL_DLL@"

@@ -4,15 +4,19 @@ project(Arcade)
 
 set(AUTHOR "Cedani")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-std=c++17 -g -pthread")
+    set(CMAKE_CXX_FLAGS "-std=c++20 -g -pthread")
 endif()
 
+
 include(C:/Users/Cedani/vcpkg/scripts/buildsystems/vcpkg.cmake)
+if (WIN32)
+include(C:/Users/Cedani/vcpkg/triplets/x64-windows.cmake)
+endif()
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 set(LIB_DTB_ENV_PATH "${CMAKE_SOURCE_DIR}/utils/env")
@@ -28,9 +32,15 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+# find_package(gtkmm CONFIG REQUIRED)
+find_package(wxWidgets CONFIG REQUIRED)
+
+# pkg_check_modules(GTK4 REQUIRED gtk4)
+# PKG_CHECK_MODULES(GTKMM REQUIRED "C:/Users/Cedani/vcpkg/installed/x86-windows/lib/pkgconfig/gtkmm-4.0.pc")
 # find_package(Boost COMPONENTS thread system REQUIRED)
 find_package(Threads)
 
+add_subdirectory(src/Launcher)
 
 
 # find_package(Threads CONFIG REQUIRED)
