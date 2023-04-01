@@ -13,10 +13,10 @@ if(UNIX)
 endif()
 
 
-include(C:/Users/Cedani/vcpkg/scripts/buildsystems/vcpkg.cmake)
-if (WIN32)
-include(C:/Users/Cedani/vcpkg/triplets/x64-windows.cmake)
-endif()
+include($ENV{VcpkgPath})
+# if (WIN32)
+#     include(C:/Users/Cedani/vcpkg/triplets/x64-windows.cmake)
+# endif()
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 set(LIB_DTB_ENV_PATH "${CMAKE_SOURCE_DIR}/utils/env")
@@ -27,8 +27,9 @@ configure_file(${CMAKE_SOURCE_DIR}/src/Config.h.in ${CMAKE_SOURCE_DIR}/src/Confi
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
+if (WIN32)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
