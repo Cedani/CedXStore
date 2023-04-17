@@ -20,6 +20,7 @@ include($ENV{VcpkgPath})
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 set(LIB_DTB_ENV_PATH "${CMAKE_SOURCE_DIR}/utils/env")
+set(RESOURCES "${CMAKE_SOURCE_DIR}/Resources/")
 
 
 configure_file(${CMAKE_SOURCE_DIR}/src/Config.h.in ${CMAKE_SOURCE_DIR}/src/Config.h)
@@ -52,7 +53,7 @@ set(PROJECT_SRC
     src/main.cpp
 )
 
-add_subdirectory(src/Threadpool)
+add_subdirectory(src/ThreadPool)
 add_subdirectory(src/Database)
 add_subdirectory(src/TCP/server)
 

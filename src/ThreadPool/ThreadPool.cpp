@@ -1,8 +1,7 @@
 #include "ThreadPool.hpp"
 
-thp::ThreadPool::ThreadPool(int size): _size(size), _isRunning(false), _cancelThread(false), _stopThread(false)
+thp::ThreadPool::ThreadPool(int size): _size(size), _nbWorkers(0), _isRunning(false), _cancelThread(false), _stopThread(false), _pauseThread(false)
 {
-    // std::cout << "number of time" << std::endl;
 }
 
 
@@ -20,15 +19,25 @@ void thp::ThreadPool::run()
         {
             std::unique_lock<std::shared_mutex> lock(_mutex);
             _cond.wait(lock, [this, &popped, &toLaunch](){
-                popped.store(_tasks.pop(toLaunch));
+                if (!_pauseThread)
+                    popped.store(_tasks.pop(toLaunch));
                 return _cancelThread.load() || _stopThread.load() || popped.load();
             });
         }
-        // std::cout << std::this_thread::get_id() << std::endl;
         if (_cancelThread.load() || (_stopThread.load() && !popped.load())) {
             return;
         } else {
+            _nbWorkers += 1;
+            {
+                std::unique_lock lock(_mutex);
+                _cond.notify_all();
+            }
             toLaunch();
+            _nbWorkers -= 1;
+            if (_tasks.size() == 0) {
+                std::unique_lock lock(_mutex);
+                _cond.notify_all();
+            }
         }
     }
 }
@@ -61,12 +70,12 @@ int thp::ThreadPool::length() const
 
 void thp::ThreadPool::cancel()
 {
+    if (!_isRunning.load())
+        return;
+    _cancelThread.store(true);
+    _isRunning.store(false);
     {
         std::shared_lock<std::shared_mutex> lock(_mutex);
-        if (!_isRunning.load())
-            return;
-        _cancelThread.store(true);
-        _isRunning.store(false);
         _cond.notify_all();
         _tasks.clear();
     }
@@ -76,16 +85,61 @@ void thp::ThreadPool::cancel()
 
 void thp::ThreadPool::terminate()
 {
+    if (_cancelThread.load() || !_isRunning.load())
+        return;
+    _stopThread.store(true);
+    _isRunning.store(false);
     {
         std::shared_lock<std::shared_mutex> lock(_mutex);
-
-        if (_cancelThread.load() || !_isRunning.load())
-            return;
-        _stopThread.store(true);
-        _isRunning.store(false);
         _cond.notify_all();
     }
     for (auto &t: _threads) 
         t.join();
-    // std::cout << "Terminated" << std::endl;
+}
+
+void thp::ThreadPool::restart(int size)
+{
+    if (_isRunning)
+        terminate();
+
+    _threads.clear();
+    _cancelThread = false;
+    _stopThread = false;
+    _size = size;
+    init();
+}
+
+void thp::ThreadPool::pause()
+{
+    if (!_isRunning || _cancelThread || _stopThread || _pauseThread)
+        return;
+    _pauseThread = true;
+    {
+        std::shared_lock<std::shared_mutex> lock(_mutex);
+        _cond.notify_all();
+    }
+    // std::cout << "paused" << std::endl;
+}
+
+void thp::ThreadPool::resume()
+{
+    if (!_pauseThread)
+        return;
+    _pauseThread = false;
+    {
+        std::shared_lock<std::shared_mutex> lock(_mutex);
+        _cond.notify_all();
+    }
+    // std::cout << "resumed" << std::endl;
+}
+
+void thp::ThreadPool::waitUntilFinished()
+{
+    {
+        std::unique_lock lock(_mutex);
+        _cond.wait(lock, [this](){
+            return (_nbWorkers == 0);
+        });
+    }
+    std::cout << "workers has finished" << std::endl;
 }
