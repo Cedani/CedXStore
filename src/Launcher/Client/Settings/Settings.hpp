@@ -28,15 +28,21 @@ namespace lau {
 
     typedef struct STheme {
         color texts;
+        color label;
         color buttons;
-        color background;     
+        color background;
+        void setDefaultTheme();
+        void setTextColors();
+        void setLabelColors();
+        void setBackgroundColors();
+        void setButtonColors();
     }Theme;
 
-    namespace Helper{
-        
-    }
-
     class Settings {
-        
+        public:
+            Settings();
+
+        private:
+            Theme _theme;
     };
 }

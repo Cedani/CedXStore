@@ -50,6 +50,20 @@ namespace thp {
                 _cond.notify_one();
             };
 
+            template<class C, class...Args>
+            void addNewTask(std::function<void()> func)
+            {
+                {
+                    std::shared_lock<std::shared_mutex> lock(_mutex);
+                    if (!_isRunning) {
+                        std::cout << "[THREADPOOL]: no task added due to pause or cancel of the threadpool." << std::endl;
+                        return;
+                    }
+                }
+                _tasks.emplace_back(func);
+                _cond.notify_one();
+            }
+
             bool running() const;
             int length() const;
             void cancel();

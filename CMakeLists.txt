@@ -42,7 +42,6 @@ find_package(wxWidgets CONFIG REQUIRED)
 # find_package(Boost COMPONENTS thread system REQUIRED)
 find_package(Threads)
 
-add_subdirectory(src/Launcher)
 
 
 # find_package(Threads CONFIG REQUIRED)
@@ -50,12 +49,13 @@ add_subdirectory(src/Launcher)
 # include_directories(${CONAN_INCLUDE_DIRS})
 
 set(PROJECT_SRC 
-    src/main.cpp
+src/main.cpp
 )
 
 add_subdirectory(src/ThreadPool)
 add_subdirectory(src/Database)
 add_subdirectory(src/TCP/server)
+add_subdirectory(src/Launcher)
 
 
 add_executable(Arcade ${PROJECT_SRC})

@@ -70,34 +70,34 @@ int main(void)
 {
     // using namespace std::chrono_literals;
     
-    tcp::Server server(47920);
+    // tcp::Server server(47920);
 
 
-    if (!server.start())
-        exit(EXIT_FAILURE);
-    // std::chrono::duration<float> mSeconds;
-    // thp::ThreadPool thpo(10);
-    // thpo.init();
-    // thpo.addNewTask(testInt, 10);
-    // thpo.addNewTask(testInt, 20);
-    // thpo.addNewTask(testInt, 30);
-    // thpo.addNewTask(testInt, 40);
-    // thpo.addNewTask(testInt, 50);
-    // thpo.addNewTask(testInt, 60);
-    // thpo.addNewTask(testInt, 70);
-    // thpo.addNewTask(testInt, 80);
-    // thpo.addNewTask(testInt, 90);
-    // thpo.addNewTask(testInt, 100);
-    // thpo.addNewTask(testInt, 110);
-    // std::chrono::steady_clock::time_point checkPoint = std::chrono::steady_clock::now();
+    // if (!server.start())
+    //     exit(EXIT_FAILURE);
+    // // std::chrono::duration<float> mSeconds;
+    // // thp::ThreadPool thpo(10);
+    // // thpo.init();
+    // // thpo.addNewTask(testInt, 10);
+    // // thpo.addNewTask(testInt, 20);
+    // // thpo.addNewTask(testInt, 30);
+    // // thpo.addNewTask(testInt, 40);
+    // // thpo.addNewTask(testInt, 50);
+    // // thpo.addNewTask(testInt, 60);
+    // // thpo.addNewTask(testInt, 70);
+    // // thpo.addNewTask(testInt, 80);
+    // // thpo.addNewTask(testInt, 90);
+    // // thpo.addNewTask(testInt, 100);
+    // // thpo.addNewTask(testInt, 110);
+    // // std::chrono::steady_clock::time_point checkPoint = std::chrono::steady_clock::now();
 
-    while (1)
-    {
-        // mSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - checkPoint);
-        // if (mSeconds.count() > 1)
-        // {
-        server.update();
-            // checkPoint = std::chrono::steady_clock::now();
-        // }
-    }
+    // while (1)
+    // {
+    //     // mSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - checkPoint);
+    //     // if (mSeconds.count() > 1)
+    //     // {
+    //     server.update();
+    //         // checkPoint = std::chrono::steady_clock::now();
+    //     // }
+    // }
 }

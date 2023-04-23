@@ -8,7 +8,9 @@
 #include <shared_mutex>
 #include <asio.hpp>
 #include <atomic>
-#define MSGMAX 2048
+// #define MSGMAXWRITE 2048
+#define MSGMAXR 1024
+#define MSGMAXW 2048
 
 namespace tcp {
     class Connection: public std::enable_shared_from_this<Connection> {
@@ -27,11 +29,20 @@ namespace tcp {
             bool isSocketOpen() const;
 
         private:
-            char _toSend[MSGMAX];
-            char _toRead[MSGMAX];
+            void parseRead();
+
+            char _toSend[MSGMAXW];
+            char _toRead[MSGMAXR];
+            bool _messageEnd = false;
+            std::string _readBuffer;
+            std::string _finishedBuffer;
             asio::ip::tcp::socket _socket;
             std::vector<nlohmann::json> _requests;
             mutable std::shared_mutex _mutex;
             std::atomic_bool _isConnected;
     };
+    typedef struct request_s {
+        Connection &_con;
+        // std::string 
+    } request;
 }

@@ -30,17 +30,23 @@ void tcp::Connection::printDisconnection()
 void tcp::Connection::readMessage()
 {
     if (!_socket.is_open()){
+        std::cout << "disconnected" << std::endl;
         // printDisconnection();
         return;
     }
 
-    std::memset(_toRead, 0, MSGMAX);
-    _socket.async_read_some(asio::buffer(_toRead, MSGMAX), [this](asio::error_code ec, std::size_t len) {
+    std::memset(_toRead, 0, MSGMAXR);
+    _socket.async_read_some(asio::buffer(_toRead, MSGMAXR), [this](asio::error_code ec, std::size_t len) {
         if (!ec) {
             try {
                 {
                     std::unique_lock<std::shared_mutex> _lock(_mutex);
-                    _requests.push_back(json::parse(_toRead));
+                    parseRead();
+                    if (_messageEnd) {
+                        _requests.push_back(json::parse(_finishedBuffer));
+                        _messageEnd = false;
+                        _finishedBuffer.clear();
+                    }
                 }
                 printMessage(_toRead);
             } catch (const nlohmann::detail::parse_error &e) {
@@ -49,25 +55,15 @@ void tcp::Connection::readMessage()
                     {"message", e.what()},
                     {"statusCode", ERROR_ARCARDE_SERVER_BAD_FORMATING}
                 };
-                // toSend["statusCode"] = ERROR_ARCARDE_SERVER_BAD_FORMATING;
                 writeMessage(toSend.dump());
             }
         } else if (ec == asio::error::eof) {
             printDisconnection();
             _isConnected.store(false);
-            // _socket.close();
             return;
-            // _socket.cancel()l
-            // if (_socket.is_open())
-            //     std::cout << "socket has been closed" << std::endl;
         } else {
             std::cout << "[ARCADE TCP SERVER]: error reading message: " << ec.message() << std::endl;
-            json toSend = {
-                    {"message", ec.message()},
-                    {"statusCode", ERROR_ARCARDE_SERVER_READING_MESSAGE}
-                };
-            // toSend["statusCode"] = ERROR_ARCARDE_SERVER_READING_MESSAGE;
-            writeMessage(toSend);
+            _socket.close();
             return;
         }
         readMessage();
@@ -76,7 +72,7 @@ void tcp::Connection::readMessage()
 
 void tcp::Connection::writeMessage(const std::string &msg)
 {
-    std::memset(_toSend, 0, MSGMAX);
+    std::memset(_toSend, 0, MSGMAXW);
     std::memcpy(_toSend, msg.data(), msg.size());
     asio::async_write(_socket, asio::buffer(_toSend, msg.size()), [this](asio::error_code ec, std::size_t len) {
         if (!ec) {
@@ -120,4 +116,23 @@ bool tcp::Connection::isSocketOpen() const
 {
     std::shared_lock<std::shared_mutex> lock(_mutex);
     return (_isConnected.load());
+}
+
+void tcp::Connection::parseRead()
+{
+    std::string msg(_toRead);
+    std::size_t idx = msg.find("\r\n");
+
+    if (idx != msg.npos) {
+        if ( idx + 2 == msg.size()) {
+            _finishedBuffer = _readBuffer + msg;
+            _readBuffer.clear();
+            _messageEnd = true;
+        } else {
+            _finishedBuffer = _readBuffer + msg.substr(0, idx); 
+            _readBuffer = _readBuffer.substr(idx + 2);
+        }
+    } else {
+            _readBuffer += msg;
+    }
 }
