@@ -4,7 +4,7 @@
 #include <wx/sizer.h>
 #include <wx/button.h>
 #include <wx/colour.h>
-#include "config.h"
+#include "Config.h"
 
 namespace lau {
     class MyButton {

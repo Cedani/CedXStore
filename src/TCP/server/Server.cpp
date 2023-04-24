@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Server::Server(int port): _acceptor(_io, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _threadPool(10), _started(false)
+tcp::Server::Server(int port): _acceptor(_io, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
 {
     _threadPool.init();
 }
@@ -30,15 +30,22 @@ bool tcp::Server::start()
     return true;
 }
 
+void tcp::Server::addConnection()
+{
+    
+    if (_tmpSocket.size() > 0)
+        return;
+    
+}
+
 void tcp::Server::waitConnections()
 {
     _acceptor.async_accept([this](asio::error_code ec, asio::ip::tcp::socket socket){
         if (!ec) {
             json toSend;
-
             std::cout << "[ARCADE TCP SERVER]: new connection detected " << socket.remote_endpoint() << std::endl;
             {
-                std::unique_lock lock(_mutex);
+                std::unique_lock<std::shared_mutex> lock(_mutex);
                 _clients.push_back(std::make_shared<Connection>(socket));
                 _clients.back()->readMessage();
                 toSend["socketAdress"] = _clients.back()->getSocket().remote_endpoint().address().to_string();
@@ -46,8 +53,9 @@ void tcp::Server::waitConnections()
                 toSend["Mesaage"] = "The client has been succesfully connected";
                 toSend["StatusCode"] = CONNECTION_SUCCESS;
                 _clients.back()->writeMessage(toSend.dump() + "\r\n");
-                _waiter.notify_one();
+                _nbClient += 1;
             }
+                // _waiter.notify_all();
         } else {
             std::cout << "[ARCADE TCP SERVER]: A connection has been refused " << ec.message() << std::endl;
         }
@@ -57,12 +65,6 @@ void tcp::Server::waitConnections()
 
 void tcp::Server::update()
 {
-    {
-        std::unique_lock lock(_mutex);
-        _waiter.wait(lock, [this](){
-            return (_clients.size() > 0);
-        });
-    }
     _clients.erase(std::remove_if(
         _clients.begin(),
         _clients.end(),
@@ -70,10 +72,14 @@ void tcp::Server::update()
             return (!cli->isSocketOpen());
         }
     ), _clients.end());
+    // }
+        // std::unique_lock lock(_mutex);
 
+    _nbClient = _clients.size();
     for (auto &cli: _clients) {
         handleCommand(*cli);
     }
+    // update();
 }
 
 void tcp::Server::handleCommand(Connection &cli)
