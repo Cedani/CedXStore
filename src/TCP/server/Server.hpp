@@ -29,6 +29,7 @@ namespace tcp
         private:
             std::thread _threadContext;
             asio::io_context _io;
+            asio::executor_work_guard<asio::io_context::executor_type> _guard;
             asio::ip::tcp::acceptor _acceptor;
             std::vector<std::shared_ptr<Connection>> _clients;
             std::unordered_map<std::string, std::function<void(nlohmann::json, Connection &)>> _routes;

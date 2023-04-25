@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Server::Server(int port): _acceptor(_io, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
+tcp::Server::Server(int port): _guard(asio::make_work_guard(_io)),_acceptor(_io, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
 {
     _threadPool.init();
 }
@@ -10,6 +10,7 @@ tcp::Server::Server(int port): _acceptor(_io, asio::ip::tcp::endpoint(asio::ip::
 tcp::Server::~Server()
 {
     if (_started) {
+        std::cout << "closing" << std::endl;
         _acceptor.close();
         _io.stop();
         _threadContext.join();
@@ -19,7 +20,9 @@ tcp::Server::~Server()
 bool tcp::Server::start()
 {
     try {
-        _threadContext = std::thread([this](){_io.run();});
+        _threadContext = std::thread([this](){
+                _io.run();
+        });
         waitConnections();
         std::cout << "[ARCADE TCP SERVER]: new server started (" << _acceptor.local_endpoint() << ")" << std::endl; 
         _started = true;
@@ -45,7 +48,7 @@ void tcp::Server::waitConnections()
             json toSend;
             std::cout << "[ARCADE TCP SERVER]: new connection detected " << socket.remote_endpoint() << std::endl;
             {
-                std::unique_lock<std::shared_mutex> lock(_mutex);
+                // std::unique_lock<std::shared_mutex> lock(_mutex);
                 _clients.push_back(std::make_shared<Connection>(socket, [this](const json &req, std::shared_ptr<Connection> con) {
                     _requests.emplace_back(con, req);
                     {
