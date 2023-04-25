@@ -15,7 +15,7 @@
 namespace tcp {
     class Connection: public std::enable_shared_from_this<Connection> {
         public:
-            Connection(asio::ip::tcp::socket &socket);
+            Connection(asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> &);
             ~Connection();
 
             void readMessage();
@@ -40,9 +40,7 @@ namespace tcp {
             std::vector<nlohmann::json> _requests;
             mutable std::shared_mutex _mutex;
             std::atomic_bool _isConnected;
+
+            std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> addRequest;
     };
-    typedef struct request_s {
-        Connection &_con;
-        // std::string 
-    } request;
 }

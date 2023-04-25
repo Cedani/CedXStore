@@ -46,14 +46,19 @@ void tcp::Server::waitConnections()
             std::cout << "[ARCADE TCP SERVER]: new connection detected " << socket.remote_endpoint() << std::endl;
             {
                 std::unique_lock<std::shared_mutex> lock(_mutex);
-                _clients.push_back(std::make_shared<Connection>(socket));
+                _clients.push_back(std::make_shared<Connection>(socket, [this](const json &req, std::shared_ptr<Connection> con) {
+                    _requests.emplace_back(con, req);
+                    {
+                        std::unique_lock<std::shared_mutex> lock(_mutex);
+                        _waiter.notify_one();
+                    }
+                }));
                 _clients.back()->readMessage();
                 toSend["socketAdress"] = _clients.back()->getSocket().remote_endpoint().address().to_string();
                 toSend["socketPort"] = _clients.back()->getSocket().remote_endpoint().port();
                 toSend["Mesaage"] = "The client has been succesfully connected";
                 toSend["StatusCode"] = CONNECTION_SUCCESS;
                 _clients.back()->writeMessage(toSend.dump() + "\r\n");
-                _nbClient += 1;
             }
                 // _waiter.notify_all();
         } else {
@@ -65,42 +70,57 @@ void tcp::Server::waitConnections()
 
 void tcp::Server::update()
 {
-    _clients.erase(std::remove_if(
-        _clients.begin(),
-        _clients.end(),
-        [](const std::shared_ptr<Connection> cli){
-            return (!cli->isSocketOpen());
-        }
-    ), _clients.end());
+
+    // _clients.erase(std::remove_if(
+    //     _clients.begin(),
+    //     _clients.end(),
+    //     [](const std::shared_ptr<Connection> cli){
+    //         return (!cli->isSocketOpen());
+    //     }
+    // ), _clients.end());
     // }
         // std::unique_lock lock(_mutex);
-
-    _nbClient = _clients.size();
-    for (auto &cli: _clients) {
-        handleCommand(*cli);
+    {
+        std::unique_lock<std::shared_mutex> lock(_mutex);
+        _waiter.wait(lock, [this]() {
+            return _requests.size() > 0;
+        });
     }
-    // update();
-}
-
-void tcp::Server::handleCommand(Connection &cli)
-{
-    std::vector<json> request = cli.getRequest();
-
-    for (int i = 0; i < request.size(); ++i) {
-        if (request[i].find("command") == request[i].end()) {
-            noRouteFound(cli);
+    std::size_t queueSize = _requests.size();
+    for (std::size_t i = 0; i < queueSize; ++i) {
+        request req;
+        _requests.pop(req);
+        if (req._req.find("command") == req._req.end()) {
+            noRouteFound(*(req._con));
             continue;
-        } else if (_routes.find(request[i]["command"]) ==  _routes.end()) {
-            badCommand(cli);
+        } else if (_routes.find(req._req["command"]) ==  _routes.end()) {
+            badCommand(*(req._con));
             continue;
         } else {
-            _threadPool.addNewTask(_routes[request[i]["command"]], request[i], std::ref(cli));
-            // _threadPool.addNewTask(_routes[request[i]["command"]]);
-            // _threadPool.addClassTask(_routes[request[i]["command"]], this, request[i], std::ref(cli));
-            // (this->*_routes[request[i]["command"]])(request[i], cli);
+            _threadPool.addNewTask(_routes[req._req["command"]], req._req, std::ref(*(req._con)));
         }
     }
 }
+
+// void tcp::Server::handleCommand(Connection &cli)
+// {
+//     std::vector<json> request = cli.getRequest();
+
+//     for (int i = 0; i < request.size(); ++i) {
+//         if (request[i].find("command") == request[i].end()) {
+//             noRouteFound(cli);
+//             continue;
+//         } else if (_routes.find(request[i]["command"]) ==  _routes.end()) {
+//             badCommand(cli);
+//             continue;
+//         } else {
+//             _threadPool.addNewTask(_routes[request[i]["command"]], request[i], std::ref(cli));
+//             // _threadPool.addNewTask(_routes[request[i]["command"]]);
+//             // _threadPool.addClassTask(_routes[request[i]["command"]], this, request[i], std::ref(cli));
+//             // (this->*_routes[request[i]["command"]])(request[i], cli);
+//         }
+//     }
+// }
 
 void tcp::Server::badCommand(Connection &con)
 {
@@ -114,7 +134,7 @@ void tcp::Server::badCommand(Connection &con)
 // {
 // }
 
-void tcp::Server::addRoute(const std::string &name, std::function<void(nlohmann::json &, Connection &)> route)
+void tcp::Server::addRoute(const std::string &name, std::function<void(nlohmann::json, Connection &)> route)
 {
     _routes[name] = route;
 }

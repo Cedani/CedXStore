@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Connection::Connection(asio::ip::tcp::socket &socket): _socket(std::move(socket)), _isConnected(true)
+tcp::Connection::Connection(asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> &func): _socket(std::move(socket)), _isConnected(true), addRequest(func)
 {
 
 }
@@ -43,8 +43,9 @@ void tcp::Connection::readMessage()
                     std::unique_lock<std::shared_mutex> _lock(_mutex);
                     parseRead();
                     if (_messageEnd) {
-                        _requests.push_back(json::parse(_finishedBuffer));
+                        // _requests.push_back(json::parse(_finishedBuffer));
                         _messageEnd = false;
+                        addRequest(json::parse(_finishedBuffer), this->shared_from_this());
                         _finishedBuffer.clear();
                     }
                 }

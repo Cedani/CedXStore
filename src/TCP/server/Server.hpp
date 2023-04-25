@@ -4,10 +4,16 @@
 #include <unordered_map>
 #include <shared_mutex>
 #include "ThreadPool.hpp"
+// #include 
 // #include "RoomHandler/RoomHandler.hpp"
 
 namespace tcp
 {
+    typedef struct request_s {
+        request_s(std::shared_ptr<Connection>c = nullptr, nlohmann::json j = {}): _con(c), _req(j) {};
+        std::shared_ptr<Connection> _con;
+        nlohmann::json _req;
+    } request;
     class Server : public std::enable_shared_from_this<Server> {
         public:
             // PUBLIC FUNCTIONS
@@ -18,23 +24,22 @@ namespace tcp
             bool start();
             void update();
 
-            void addRoute(const std::string &, std::function<void(nlohmann::json &, Connection &)>);
+            void addRoute(const std::string &, std::function<void(nlohmann::json, Connection &)>);
 
         private:
             std::thread _threadContext;
             asio::io_context _io;
             asio::ip::tcp::acceptor _acceptor;
             std::vector<std::shared_ptr<Connection>> _clients;
-            std::unordered_map<std::string, std::function<void(nlohmann::json &, Connection &)>> _routes;
+            std::unordered_map<std::string, std::function<void(nlohmann::json, Connection &)>> _routes;
             thp::ThreadPool _threadPool;
             // rmh::RoomHandler _roomHandler;
             std::shared_mutex _mutex;
-            // std::shared_mutex _mutex2;
             std::condition_variable_any _waiter;
             bool _started;
             std::atomic<int> _nbClient;
             std::vector<asio::ip::tcp::socket> _tmpSocket;
-
+            thp::ThreadSafeQueue<request> _requests; 
 
         private:
             //add Connections

@@ -39,11 +39,11 @@ int main(void)
     tcp::Server server(47920);
 
     tester test;
-    server.addRoute("test1", [](json &j, tcp::Connection &cli) {
+    server.addRoute("test1", [](json j, tcp::Connection &cli) {
         testConnection(j, cli);
     });
 
-    server.addRoute("test2", [test](json &j, tcp::Connection &cli) mutable -> void {
+    server.addRoute("test2", [test](json j, tcp::Connection &cli) mutable -> void {
         test.testConnection(j, cli);
     });
 
