@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <memory>
 #include <nlohmann/json.hpp>
 
 namespace dtb {

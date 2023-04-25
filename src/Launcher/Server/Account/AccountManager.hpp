@@ -1,5 +1,6 @@
 #pragma once
 #include "MySqlDb.hpp"
+#include "Server.hpp"
 
 namespace lau {
     struct Account {
@@ -9,7 +10,10 @@ namespace lau {
 
     class AccountManager {
         public:
+            AccountManager(dtb::IDatabase &);
 
+            void addRoute(tcp::Server &serv);
         private:
+            dtb::IDatabase & _db;
     };
 }

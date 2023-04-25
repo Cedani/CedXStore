@@ -12,7 +12,7 @@ namespace tcp
         public:
             // PUBLIC FUNCTIONS
 
-            Server(int port);
+            Server(int port = 47920);
             ~Server();
 
             bool start();
