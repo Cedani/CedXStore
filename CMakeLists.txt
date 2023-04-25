@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-std=c++20 -g -pthread")
+    set(CMAKE_CXX_FLAGS "-std=c++20 -g3")
 endif()
 
 

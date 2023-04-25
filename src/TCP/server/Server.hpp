@@ -29,11 +29,18 @@ namespace tcp
             thp::ThreadPool _threadPool;
             // rmh::RoomHandler _roomHandler;
             std::shared_mutex _mutex;
+            // std::shared_mutex _mutex2;
             std::condition_variable_any _waiter;
             bool _started;
+            std::atomic<int> _nbClient;
+            std::vector<asio::ip::tcp::socket> _tmpSocket;
 
 
         private:
+            //add Connections
+            void addConnection();
+
+
             // ROUTES RESPONSES
             void badCommand(Connection &);
             void noRouteFound(Connection &);

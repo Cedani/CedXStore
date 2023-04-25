@@ -28,9 +28,9 @@ void lau::SideMenu::initPanel()
 
 void lau::SideMenu::initButtons()
 {
-    _Library = new MyButton(_panel, _mBox, _("Library"), _("images/library.png"));
-    _Store = new MyButton(_panel, _mBox, _("Store"), _("images/shop.png"));
-    _Downloads = new MyButton(_panel, _mBox, _("Download"), _("images/download.png"));
+    _Library = new MyButton(_panel, _mBox, _("Library"), _("Images/library.png"));
+    _Store = new MyButton(_panel, _mBox, _("Store"), _("Images/shop.png"));
+    _Downloads = new MyButton(_panel, _mBox, _("Download"), _("Images/download.png"));
 
 
     // useless

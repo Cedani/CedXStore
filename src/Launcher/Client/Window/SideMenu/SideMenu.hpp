@@ -8,7 +8,7 @@
 #include <wx/memory.h>
 #include "myButton.hpp"
 #include "utils.hpp"
-#include "config.h"
+#include "Config.h"
 
 namespace lau {
     class SideMenu {
