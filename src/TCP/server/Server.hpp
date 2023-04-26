@@ -24,7 +24,7 @@ namespace tcp
             bool start();
             void update();
 
-            void addRoute(const std::string &, std::function<void(nlohmann::json, Connection &)>);
+            void addRoute(const std::string &, std::function<void(const nlohmann::json &, Connection &)>);
 
         private:
             std::thread _threadContext;
@@ -32,7 +32,7 @@ namespace tcp
             asio::executor_work_guard<asio::io_context::executor_type> _guard;
             asio::ip::tcp::acceptor _acceptor;
             std::vector<std::shared_ptr<Connection>> _clients;
-            std::unordered_map<std::string, std::function<void(nlohmann::json, Connection &)>> _routes;
+            std::unordered_map<std::string, std::function<void(const nlohmann::json &, Connection &)>> _routes;
             thp::ThreadPool _threadPool;
             // rmh::RoomHandler _roomHandler;
             std::shared_mutex _mutex;

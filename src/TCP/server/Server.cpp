@@ -96,7 +96,7 @@ void tcp::Server::update()
         if (req._req.find("command") == req._req.end()) {
             noRouteFound(*(req._con));
             continue;
-        } else if (_routes.find(req._req["command"]) ==  _routes.end()) {
+        } else if (_routes.find(req._req["command"]) == _routes.end()) {
             badCommand(*(req._con));
             continue;
         } else {
@@ -137,7 +137,7 @@ void tcp::Server::badCommand(Connection &con)
 // {
 // }
 
-void tcp::Server::addRoute(const std::string &name, std::function<void(nlohmann::json, Connection &)> route)
+void tcp::Server::addRoute(const std::string &name, std::function<void(const nlohmann::json &, Connection &)> route)
 {
     _routes[name] = route;
 }

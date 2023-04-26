@@ -36,7 +36,7 @@ bool dtb::MySqlDb::Connect()
             // if (tmp.hasData())
             //     std::cout << "has data" << std::endl;
         }
-        std::cout << "HOST: " << host << " PORT " << port << " USER " << user << " PASSWORD " << password << " DATABASE " << database << std::endl; 
+        // std::cout << "HOST: " << host << " PORT " << port << " USER " << user << " PASSWORD " << password << " DATABASE " << database << std::endl; 
         _session = std::make_unique<mysqlx::Session>(mysqlx::Session(host, port, user, password));
         _db = std::make_unique<mysqlx::Schema>(_session->getSchema(database));
         envF.close();
@@ -115,7 +115,6 @@ void dtb::MySqlDb::storeValues(json &rowJson, const mysqlx::abi2::r0::Row &row, 
 json dtb::MySqlDb::select(const json &query)
 {
     try {
-        json result;
         mysqlx::Table table = _db->getTable(std::string(query["table"]));
         std::unique_ptr<mysqlx::abi2::r0::TableSelect> request;
         std::string typeSelect(query["fields"].type_name());
@@ -146,11 +145,13 @@ json dtb::MySqlDb::select(const json &query)
         auto resultRaw = request->execute();
         auto &columns = resultRaw.getColumns();
 
+        json result;
         for (auto row = resultRaw.fetchOne(); row; row = resultRaw.fetchOne()) {
             json rowJson;
             storeValues(rowJson, row, columns, resultRaw.getColumnCount());
             result["data"].push_back(rowJson);
         }
+        result["code"] = OK;
         return (result);
     } catch (const mysqlx::Error &e) {
         std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
@@ -178,7 +179,7 @@ void dtb::MySqlDb::binder(const json &query, std::unique_ptr<mysqlx::abi2::r0::T
     if (query.find("data") == query.end())
         return;
     for (const auto &v: query["data"]) {
-        std::cout << "query is " << v << std::endl;
+        // std::cout << "query is " << v << std::endl;
         if (v["value"].is_boolean())
             request->bind(std::string(v["label"]), v["value"].get<bool>());
         else if (v["value"].is_string())

@@ -1,13 +1,23 @@
 #pragma once
-#include "IDatabase.hpp"
+#include "MySqlDb.hpp"
 #include "Server.hpp"
+#include "Config.h"
+#include <cryptopp/osrng.h>
+#include <cryptopp/sha.h>
+
+#define TABLE "clientest"
 
 
 namespace lau {
+    typedef enum lerror_s {
+        OK = 200,
+        WRONG = 400
+    }lerror;
     class Core {
         public: 
             Core(int port);
-            ~Core();
+            // ~Core();
+
 
 
             void init();
@@ -16,19 +26,28 @@ namespace lau {
         private:
             int _port;
             std::unique_ptr<dtb::IDatabase> _db;
-            // std::thread _serverThread;
             tcp::Server _server;
+            void missingArguments(tcp::Connection &, const std::string &);
 
         private:
 
-        //function used to add all the handlers
-        void addRoute();
+            //function used to add all the handlers
+            void addRoute();
 
-        //account management
+            //account management
 
-        //function used for login 
-        void login(nlohmann::json &, tcp::Connection &);
+            //function used for login 
+            void login(const nlohmann::json &, tcp::Connection &);
 
-        void signup(nlohmann::json &, tcp::Connection &);
+            void signup(const nlohmann::json &, tcp::Connection &);
+
+            // hash functions for passwords
+            std::string hashString(const std::string &toHash);
+            std::string hashString(const std::string &toHash, const std::string &st);
+            std::string generateSalt();
+
+            //utils
+            void sendSuccess(const nlohmann::json &);
+            void sendError(const std::string &);
     };
 }

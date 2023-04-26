@@ -41,6 +41,7 @@ find_package(wxWidgets CONFIG REQUIRED)
 # PKG_CHECK_MODULES(GTKMM REQUIRED "C:/Users/Cedani/vcpkg/installed/x86-windows/lib/pkgconfig/gtkmm-4.0.pc")
 # find_package(Boost COMPONENTS thread system REQUIRED)
 find_package(Threads)
+find_package(cryptopp CONFIG REQUIRED)
 
 
 

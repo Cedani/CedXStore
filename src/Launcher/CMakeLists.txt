@@ -13,6 +13,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/App
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/SideMenu
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Core/
 )
 
 set(SRC
@@ -27,6 +28,7 @@ set(SRC
 
 set(SRC_SERVER
     ${CMAKE_CURRENT_SOURCE_DIR}/Server/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Core/Core.cpp
 )
 
 add_executable(Launcher ${SRC})
@@ -38,7 +40,7 @@ set_target_properties(Launcher PROPERTIES
 )
 
 add_executable(LauncherServer ${SRC_SERVER})
-target_link_libraries(LauncherServer PRIVATE LibTcpServer)
+target_link_libraries(LauncherServer PRIVATE LibTcpServer LibDatabase cryptopp::cryptopp)
 set_target_properties(LauncherServer PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
