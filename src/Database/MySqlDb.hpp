@@ -44,6 +44,8 @@ namespace dtb{
 
             // insert 
             nlohmann::json insert(const nlohmann::json &);
+            nlohmann::json insertSignupLauncher(const nlohmann::json &);
+
 
             // update
             nlohmann::json update(const nlohmann::json &);

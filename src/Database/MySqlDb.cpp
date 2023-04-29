@@ -6,6 +6,7 @@ dtb::MySqlDb::MySqlDb(const std::string &filepath): _filepath(filepath), _sessio
 {
     _functions["select"] = &MySqlDb::select;
     _functions["insert"] = &MySqlDb::insert;
+    _functions["insertSignupLauncher"] = &MySqlDb::insertSignupLauncher;
     _functions["update"] = &MySqlDb::update;
     _functions["remove"] = &MySqlDb::remove;
 }
@@ -213,6 +214,43 @@ json dtb::MySqlDb::insert(const json &query)
             request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::forward<std::vector<std::string>>(query["fields"])));
         else
             request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::string(query["fields"])));
+        request->values(std::forward<std::vector<std::string>>(query["data"]));
+        auto resultRequest = request->execute();
+
+        return json{
+            {"code", OK},
+            {"Count", resultRequest.getAffectedItemsCount()},
+            {"Message", "succesfully inserted valuee"}
+        };
+    } catch (const mysqlx::Error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", SQL_EXCEPTION},
+            {"message", e.what()}
+        });
+    } catch (const json::out_of_range &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return json{
+            {"code", e.id},
+            {"message", e.what()}
+        };
+    } catch (const json::type_error &e) {
+        std::cout << "[ARCADE DATABASE LIB]: " << e.what() << std::endl;
+        return (json{
+            {"code", e.id},
+            {"message", e.what()}
+        });
+    }
+}
+
+json dtb::MySqlDb::insertSignupLauncher(const json &query)
+{
+    try {
+        mysqlx::Table table = _db->getTable(std::string(query["table"]));
+        std::unique_ptr<mysqlx::abi2::r0::TableInsert> request;
+
+        request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert("pseudo", "password", "kslt"));
+        // request = std::make_unique<mysqlx::abi2::r0::TableInsert>(table.insert(std::string(query["fields"])));
         request->values(std::forward<std::vector<std::string>>(query["data"]));
         auto resultRequest = request->execute();
 

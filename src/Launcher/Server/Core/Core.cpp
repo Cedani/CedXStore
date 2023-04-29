@@ -42,16 +42,16 @@ void lau::Core::signup(const json &req, tcp::Connection &con)
 {
     if (req.find("data") == req.end())
         return missingArguments(con, "data");
-    if (req["data"].find("pseudo") == req.end())
+    if (req["data"].find("pseudo") == req["data"].end())
         return missingArguments(con, "data.pseudo");
-    if (req["data"].find("password") == req.end())
+    if (req["data"].find("password") == req["data"].end())
         return missingArguments(con, "data.password");
     std::string salt = generateSalt(); 
     std::string password = hashString(req["data"]["password"], salt);
     json sqlQuery = {
-        {"command", "insert"},
+        {"command", "insertSignupLauncher"},
         {"table", TABLE},
-        {"fields", {"pseudo", "password", "kslt"}},
+        // {"fields", {"pseudo", "password", "kslt"}},
         {"data", {req["data"]["pseudo"], password, salt}}
     };
 
