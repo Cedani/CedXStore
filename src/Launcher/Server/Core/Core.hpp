@@ -1,5 +1,6 @@
 #pragma once
-#include "MySqlDb.hpp"
+// #include "MySqlDb.hpp"
+#include "Database.hpp"
 #include "Server.hpp"
 #include "Config.h"
 #include <cryptopp/osrng.h>
@@ -25,7 +26,7 @@ namespace lau {
 
         private:
             int _port;
-            std::unique_ptr<dtb::IDatabase> _db;
+            dtb::Database _db;
             tcp::Server _server;
             void missingArguments(tcp::Connection &, const std::string &);
 

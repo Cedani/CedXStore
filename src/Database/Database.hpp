@@ -39,7 +39,9 @@ namespace dtb
                 _con.execute_statement(stmt, params, res);
                 return nlohmann::json{
                     {"message", res.info()},
-                    {"code", res.affected_rows()}};
+                    {"rows affected", res.affected_rows()},
+                    {"code", OK}
+                };
             }
             catch (boost::mysql::error_with_diagnostics &e)
             {

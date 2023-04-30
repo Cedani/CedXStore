@@ -2,18 +2,18 @@
 
 using nlohmann::json;
 
-lau::Core::Core(int port): _port(port)
+lau::Core::Core(int port): _port(port), _db(LIB_DTB_ENV_PATH)
 {
 
 }
 
 void lau::Core::init()
 {
-    _db = std::make_unique<dtb::MySqlDb>(LIB_DTB_ENV_PATH);
-    // if (!_db->Connect()) {
-    //     std::cout << "[LauncherServer]: Connection to database impossible" << std::endl;
-    //     exit(EXIT_FAILURE);
-    // }
+    // _db = std::make_unique<dtb::MySqlDb>(LIB_DTB_ENV_PATH);
+    if (!_db.connect()) {
+        std::cout << "[LauncherServer]: Connection to database impossible" << std::endl;
+        exit(EXIT_FAILURE);
+    }
     addRoute();
 }
 
@@ -48,18 +48,23 @@ void lau::Core::signup(const json &req, tcp::Connection &con)
         return missingArguments(con, "data.password");
     std::string salt = generateSalt(); 
     std::string password = hashString(req["data"]["password"], salt);
-    json sqlQuery = {
-        {"command", "insertSignupLauncher"},
-        {"table", TABLE},
-        // {"fields", {"pseudo", "password", "kslt"}},
-        {"data", {req["data"]["pseudo"], password, salt}}
-    };
+    // json sqlQuery = {
+    //     {"command", "insertSignupLauncher"},
+    //     {"table", TABLE},
+    //     // {"fields", {"pseudo", "password", "kslt"}},
+    //     {"data", {req["data"]["pseudo"], password, salt}}
+    // };
 
-    json sqlResult = _db->executeQuery(sqlQuery);
+    std::string sqlQuery = "insert into clientest (pseudo, password, kslt)\n"
+    "values (?, ?, ?)";
+
+    
+
+    json sqlResult = _db.executeQuery(sqlQuery, std::make_tuple(req["data"]["pseudo"].get<std::string>(), password, salt));
+    // json sqlResult = _db->executeQuery(sqlQuery);
     
     if (sqlResult["code"] != dtb::OK) {
         con.writeMessage(sqlResult);
-        return;
     } else {
         con.writeMessage(json{
             {"message", "succesfully signed up"},
@@ -91,7 +96,8 @@ void lau::Core::login(const json &req, tcp::Connection &con)
         }}
     };
 
-    json sqlResult = _db->executeQuery(sqlQuery);
+    json sqlResult;
+    // json sqlResult = _db->executeQuery(sqlQuery);
     json toSend;
     
     if (sqlResult["code"] != dtb::OK) {
