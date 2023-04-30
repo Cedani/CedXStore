@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Connection::Connection(asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> &func): _socket(std::move(socket)), _isConnected(true), addRequest(func)
+tcp::Connection::Connection(boost::asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, boost::shared_ptr<Connection>)> &func): _socket(std::move(socket)), _isConnected(true), addRequest(func)
 {
 
 }
@@ -36,7 +36,7 @@ void tcp::Connection::readMessage()
     }
 
     std::memset(_toRead, 0, MSGMAXR);
-    _socket.async_read_some(asio::buffer(_toRead, MSGMAXR), [this](asio::error_code ec, std::size_t len) {
+    _socket.async_read_some(boost::asio::buffer(_toRead, MSGMAXR), [this](boost::system::error_code ec, std::size_t len) {
         if (!ec) {
             try {
                 {
@@ -58,7 +58,7 @@ void tcp::Connection::readMessage()
                 };
                 writeMessage(toSend.dump());
             }
-        } else if (ec == asio::error::eof) {
+        } else if (ec == boost::asio::error::eof) {
             printDisconnection();
             _isConnected.store(false);
             return;
@@ -75,7 +75,7 @@ void tcp::Connection::writeMessage(const std::string &msg)
 {
     std::memset(_toSend, 0, MSGMAXW);
     std::memcpy(_toSend, msg.data(), msg.size());
-    asio::async_write(_socket, asio::buffer(_toSend, msg.size()), [this](asio::error_code ec, std::size_t len) {
+    boost::asio::async_write(_socket, boost::asio::buffer(_toSend, msg.size()), [this](boost::system::error_code ec, std::size_t len) {
         if (!ec) {
             std::cout << "[ARCADE TCP SERVER]: Message has been succesfully sent to " << _socket.remote_endpoint().address().to_string() 
                   << ":" << _socket.remote_endpoint().port() << std::endl;
@@ -85,7 +85,7 @@ void tcp::Connection::writeMessage(const std::string &msg)
     });
 }
 
-const asio::ip::tcp::socket &tcp::Connection::getSocket() const
+const boost::asio::ip::tcp::socket &tcp::Connection::getSocket() const
 {
     return (_socket);
 }

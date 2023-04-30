@@ -28,7 +28,7 @@ set(SRC
 
 set(SRC_SERVER
     ${CMAKE_CURRENT_SOURCE_DIR}/Server/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Core/Core.cpp
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Server/Core/Core.cpp
 )
 
 add_executable(Launcher ${SRC})
@@ -40,7 +40,7 @@ set_target_properties(Launcher PROPERTIES
 )
 
 add_executable(LauncherServer ${SRC_SERVER})
-target_link_libraries(LauncherServer PRIVATE LibTcpServer LibDatabase cryptopp::cryptopp mysqlcppconn)
+target_link_libraries(LauncherServer PRIVATE LibDatabase nlohmann_json::nlohmann_json Boost::headers Threads::Threads OpenSSL::Crypto OpenSSL::SSL)
 set_target_properties(LauncherServer PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"

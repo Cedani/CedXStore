@@ -22,6 +22,7 @@ namespace dtb {
             MySqlDb(const std::string &);
 
             nlohmann::json executeQuery(const nlohmann::json &) final;
+            void init();
         private:
 
             // memebers
@@ -33,7 +34,6 @@ namespace dtb {
             std::unordered_map<std::string, nlohmann::json(MySqlDb::*)(const nlohmann::json &)> _functions;
     
             // methods
-            void init();
 
             nlohmann::json insert(const std::string &);
 

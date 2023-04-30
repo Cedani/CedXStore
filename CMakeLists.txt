@@ -36,6 +36,7 @@ if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
+
 find_package(nlohmann_json CONFIG REQUIRED)
 # find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
 # find_package(gtkmm CONFIG REQUIRED)
@@ -44,8 +45,23 @@ find_package(wxWidgets CONFIG REQUIRED)
 # pkg_check_modules(GTK4 REQUIRED gtk4)
 # PKG_CHECK_MODULES(GTKMM REQUIRED "C:/Users/Cedani/vcpkg/installed/x86-windows/lib/pkgconfig/gtkmm-4.0.pc")
 # find_package(Boost COMPONENTS thread system REQUIRED)
+if(WIN32)
+    set(Boost_USE_STATIC_LIBS ON)
+    # set(Boost_COMPILER "-vc143")
+    set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/external/Boost")
+    set(BOOST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/Boost/include/boost-1_82/boost")
+    set(BOOST_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/external/Boost/lib")
+    # find_package(Threads REQUIRED)
+endif()
+
+
 find_package(Threads)
 find_package(cryptopp CONFIG REQUIRED)
+find_package(Boost COMPONENTS thread system headers REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+# Boost
+# find_package(Boost REQUIRED COMPONENTS headers )
 
 
 

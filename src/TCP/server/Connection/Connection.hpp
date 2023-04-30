@@ -6,21 +6,24 @@
 #include <memory>
 #include <ErrorCode.hpp>
 #include <shared_mutex>
-#include <asio.hpp>
+// #include <asio.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
 #include <atomic>
+
 // #define MSGMAXWRITE 2048
 #define MSGMAXR 1024
 #define MSGMAXW 2048
 
 namespace tcp {
-    class Connection: public std::enable_shared_from_this<Connection> {
+    class Connection: public boost::enable_shared_from_this<Connection> {
         public:
-            Connection(asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> &);
+            Connection(boost::asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, boost::shared_ptr<Connection>)> &);
             ~Connection();
 
             void readMessage();
             void writeMessage(const std::string &message);
-            const asio::ip::tcp::socket &getSocket() const;
+            const boost::asio::ip::tcp::socket &getSocket() const;
             void printMessage(const std::string &msg);
             void printDisconnection();
             const std::vector<nlohmann::json> getRequest();
@@ -36,11 +39,11 @@ namespace tcp {
             bool _messageEnd = false;
             std::string _readBuffer;
             std::string _finishedBuffer;
-            asio::ip::tcp::socket _socket;
+            boost::asio::ip::tcp::socket _socket;
             std::vector<nlohmann::json> _requests;
             mutable std::shared_mutex _mutex;
             std::atomic_bool _isConnected;
 
-            std::function<void(const nlohmann::json &, std::shared_ptr<Connection>)> addRequest;
+            std::function<void(const nlohmann::json &, boost::shared_ptr<Connection>)> addRequest;
     };
 }

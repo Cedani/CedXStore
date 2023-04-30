@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Server::Server(int port): _guard(asio::make_work_guard(_io)),_acceptor(_io, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
+tcp::Server::Server(int port): _guard(boost::asio::make_work_guard(_io)),_acceptor(_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
 {
     _threadPool.init();
 }
@@ -20,9 +20,7 @@ tcp::Server::~Server()
 bool tcp::Server::start()
 {
     try {
-        _threadContext = std::thread([this](){
-                _io.run();
-        });
+        _threadContext = boost::thread([this](){_io.run();});
         waitConnections();
         std::cout << "[ARCADE TCP SERVER]: new server started (" << _acceptor.local_endpoint() << ")" << std::endl; 
         _started = true;
@@ -33,23 +31,23 @@ bool tcp::Server::start()
     return true;
 }
 
-void tcp::Server::addConnection()
-{
+// void tcp::Server::addConnection()
+// {
     
-    if (_tmpSocket.size() > 0)
-        return;
+//     if (_tmpSocket.size() > 0)
+//         return;
     
-}
+// }
 
 void tcp::Server::waitConnections()
 {
-    _acceptor.async_accept([this](asio::error_code ec, asio::ip::tcp::socket socket){
+    _acceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket){
         if (!ec) {
             json toSend;
             std::cout << "[ARCADE TCP SERVER]: new connection detected " << socket.remote_endpoint() << std::endl;
             {
                 // std::unique_lock<std::shared_mutex> lock(_mutex);
-                _clients.push_back(std::make_shared<Connection>(socket, [this](const json &req, std::shared_ptr<Connection> con) {
+                _clients.push_back(boost::make_shared<Connection>(socket, [this](const json &req, boost::shared_ptr<Connection> con) {
                     _requests.emplace_back(con, req);
                     {
                         std::unique_lock<std::shared_mutex> lock(_mutex);

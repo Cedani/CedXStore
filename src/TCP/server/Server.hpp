@@ -10,11 +10,12 @@
 namespace tcp
 {
     typedef struct request_s {
-        request_s(std::shared_ptr<Connection>c = nullptr, nlohmann::json j = {}): _con(c), _req(j) {};
-        std::shared_ptr<Connection> _con;
+        request_s(boost::shared_ptr<Connection>c = nullptr, nlohmann::json j = {}): _con(c), _req(j) {};
+        boost::shared_ptr<Connection> _con;
         nlohmann::json _req;
     } request;
-    class Server : public std::enable_shared_from_this<Server> {
+
+    class Server : public boost::enable_shared_from_this<Server> {
         public:
             // PUBLIC FUNCTIONS
 
@@ -27,11 +28,11 @@ namespace tcp
             void addRoute(const std::string &, std::function<void(const nlohmann::json &, Connection &)>);
 
         private:
-            std::thread _threadContext;
-            asio::io_context _io;
-            asio::executor_work_guard<asio::io_context::executor_type> _guard;
-            asio::ip::tcp::acceptor _acceptor;
-            std::vector<std::shared_ptr<Connection>> _clients;
+            boost::thread _threadContext;
+            boost::asio::io_context _io;
+            boost::asio::executor_work_guard<boost::asio::io_context::executor_type> _guard;
+            boost::asio::ip::tcp::acceptor _acceptor;
+            std::vector<boost::shared_ptr<Connection>> _clients;
             std::unordered_map<std::string, std::function<void(const nlohmann::json &, Connection &)>> _routes;
             thp::ThreadPool _threadPool;
             // rmh::RoomHandler _roomHandler;
@@ -39,7 +40,7 @@ namespace tcp
             std::condition_variable_any _waiter;
             bool _started;
             std::atomic<int> _nbClient;
-            std::vector<asio::ip::tcp::socket> _tmpSocket;
+            // std::vector<boost::asio::ip::tcp::socket> _tmpSocket;
             thp::ThreadSafeQueue<request> _requests; 
 
         private:

@@ -23,7 +23,7 @@ namespace dtb{
             MySqlDb(const std::string &);
             ~MySqlDb() = default;
 
-            bool Connect() final;
+            bool connect() final;
             bool execute(const nlohmann::json &);
             nlohmann::json executeQuery(const nlohmann::json &);
             // nlohmann::json executeQuery(const std::string &) final;

@@ -11,7 +11,7 @@ dtb::MySqlDb::MySqlDb(const std::string &filepath): _filepath(filepath), _sessio
     _functions["remove"] = &MySqlDb::remove;
 }
 
-bool dtb::MySqlDb::Connect()
+bool dtb::MySqlDb::connect()
 {
     std::string host;
     std::string user;
