@@ -40,7 +40,7 @@ set_target_properties(Launcher PROPERTIES
 )
 
 add_executable(LauncherServer ${SRC_SERVER})
-target_link_libraries(LauncherServer PRIVATE LibTcpServer LibDatabase cryptopp::cryptopp)
+target_link_libraries(LauncherServer PRIVATE LibTcpServer LibDatabase cryptopp::cryptopp mysqlcppconn)
 set_target_properties(LauncherServer PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"

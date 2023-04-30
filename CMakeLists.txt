@@ -5,7 +5,7 @@ project(Arcade)
 set(AUTHOR "Cedani")
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 if(UNIX)
@@ -21,7 +21,11 @@ include($ENV{VcpkgPath})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 set(LIB_DTB_ENV_PATH "${CMAKE_SOURCE_DIR}/utils/env")
 set(RESOURCES "${CMAKE_SOURCE_DIR}/Resources/")
-
+set(SQL_PATH $ENV{MySqlPath})
+include_directories(
+    ${SQL_PATH}/include/
+)
+link_directories($ENV{MySqlPath}/lib/vs14)
 
 configure_file(${CMAKE_SOURCE_DIR}/src/Config.h.in ${CMAKE_SOURCE_DIR}/src/Config.h)
 
@@ -33,7 +37,7 @@ if (WIN32)
 endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+# find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
 # find_package(gtkmm CONFIG REQUIRED)
 find_package(wxWidgets CONFIG REQUIRED)
 

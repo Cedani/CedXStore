@@ -1,62 +1,48 @@
 #pragma once
+#include <jdbc/mysql_connection.h>
+#include <jdbc/mysql_driver.h>
+#include <jdbc/cppconn/resultset.h>
+#include <jdbc/cppconn/statement.h>
 #include "IDatabase.hpp"
-#include <mysqlx/xdevapi.h>
-#include <mysqlx/common/value.h>
 #include <fstream>
-#include <memory>
-#include <shared_mutex>
-#include <unordered_map>
-#include <time.h>
-#include <sstream>
+#include <jdbc/mysql_error.h>
+#include <jdbc/cppconn/connection.h>
+#include <jdbc/cppconn/driver.h>
 
-
-namespace dtb{
+namespace dtb {
     typedef enum {
-        NO_COMMAND_FIELD = 400,
+        // NO_COMMAND_FIELD = 400,
         COMMAND_NOT_FOUND = 404,
-        SQL_EXCEPTION = 401,
+        // SQL_EXCEPTION = 401,
         OK = 200,
-        NO_RESULT = 402,
+        // NO_RESULT = 402,
     }CODE;
-    class MySqlDb : public IDatabase {
+    class MySqlDb: public IDatabase {
         public:
             MySqlDb(const std::string &);
-            ~MySqlDb() = default;
 
-            bool Connect() final;
-            bool execute(const nlohmann::json &) final;
             nlohmann::json executeQuery(const nlohmann::json &) final;
-            // nlohmann::json executeQuery(const std::string &) final;
         private:
+
+            // memebers
+            sql::mysql::MySQL_Driver *_driver;
             std::string _filepath;
-            std::unique_ptr<mysqlx::Session> _session;
-            std::shared_mutex _mutex;
-            std::unique_ptr<mysqlx::Schema> _db;
+            std::string _hostName;
+            std::string _user;
+            std::string _password;
             std::unordered_map<std::string, nlohmann::json(MySqlDb::*)(const nlohmann::json &)> _functions;
+    
+            // methods
+            void init();
 
-        private:
-            // PRIVATE FUNCTIONS
-            void storeValues(nlohmann::json &, const mysqlx::abi2::r0::Row &, const mysqlx::abi2::r0::RowResult::Columns &, int size);
+            nlohmann::json insert(const std::string &);
 
-            // select
-            nlohmann::json select(const nlohmann::json &);
-            void binder(const nlohmann::json &, std::unique_ptr<mysqlx::abi2::r0::TableSelect> &);
+            nlohmann::json update(const std::string &);
 
-            // insert 
-            nlohmann::json insert(const nlohmann::json &);
-            nlohmann::json insertSignupLauncher(const nlohmann::json &);
+            nlohmann::json remove(const std::string &);
 
-
-            // update
-            nlohmann::json update(const nlohmann::json &);
-            void binder(const nlohmann::json &, mysqlx::abi2::r0::TableUpdate &);
-            void setValueUpdate(const nlohmann::json &, mysqlx::abi2::r0::TableUpdate &);
-
-            // remove
-            nlohmann::json remove(const nlohmann::json &);
-            void binder(const nlohmann::json &, mysqlx::abi2::r0::TableRemove &);
-
-            // get timestamps value
-            std::string getTimeStamp(int);
+            nlohmann::json select(const nlohmann::json &query); 
+    
+            nlohmann::json bindSelectValues(sql::ResultSet *, const nlohmann::json &);
     };
 }

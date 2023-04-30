@@ -10,10 +10,10 @@ lau::Core::Core(int port): _port(port)
 void lau::Core::init()
 {
     _db = std::make_unique<dtb::MySqlDb>(LIB_DTB_ENV_PATH);
-    if (!_db->Connect()) {
-        std::cout << "[LauncherServer]: Connection to database impossible" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    // if (!_db->Connect()) {
+    //     std::cout << "[LauncherServer]: Connection to database impossible" << std::endl;
+    //     exit(EXIT_FAILURE);
+    // }
     addRoute();
 }
 
