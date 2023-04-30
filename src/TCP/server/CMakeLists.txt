@@ -10,7 +10,9 @@ set(LIB_SERVER_SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/ThreadPool/ThreadPool.cpp
     Server.cpp
 )
-    
+
+# if (UNIX) 
+
 add_library(LibTcpServer SHARED ${LIB_SERVER_SRC})
 target_link_libraries(LibTcpServer PUBLIC nlohmann_json::nlohmann_json LibThread Boost::system Boost::thread ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(LibTcpServer PUBLIC
