@@ -47,6 +47,9 @@ namespace lau {
             std::string hashString(const std::string &toHash);
             std::string hashString(const std::string &toHash, const std::string &st);
             std::string generateSalt();
+            void fromHashToHex(const std::string &, std::string &, int);
+            void fromHashToHex(const CryptoPP::byte *, std::string &, int);
+            void fromHexToHash(const std::string &, std::string &);
 
             //utils
             void sendSuccess(const nlohmann::json &);

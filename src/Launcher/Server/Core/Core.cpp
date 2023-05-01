@@ -135,9 +135,10 @@ std::string lau::Core::generateSalt()
     CryptoPP::AutoSeededRandomPool rng;
 
     rng.GenerateBlock(scratch, scratch.size());
-    CryptoPP::StringSource ss((const CryptoPP::byte *)scratch, 32, true, new CryptoPP::HexEncoder(
-        new CryptoPP::StringSink(encoded)
-    ));
+    // CryptoPP::StringSource ss((const CryptoPP::byte *)scratch, 32, true, new CryptoPP::HexEncoder(
+    //     new CryptoPP::StringSink(encoded)
+    // ));
+    fromHashToHex((const CryptoPP::byte *)scratch, encoded, 32);
     return (encoded);
 }
 
@@ -148,9 +149,7 @@ std::string lau::Core::hashString(const std::string &toHash, const std::string &
     CryptoPP::SHA256 hash;
     std::string encoded;
 
-    CryptoPP::StringSource ssalt((const CryptoPP::byte *)st.data(), st.size(), true, new CryptoPP::HexDecoder(
-        new CryptoPP::StringSink(salt)
-    ));
+    fromHexToHash(st, salt);
 
     salt += toHash;
     hash.Update((const CryptoPP::byte *)salt.data(), salt.size());
@@ -158,9 +157,7 @@ std::string lau::Core::hashString(const std::string &toHash, const std::string &
     hash.Final((CryptoPP::byte *)&result[0]);
 
 
-    CryptoPP::StringSource ss((const CryptoPP::byte *)result.data(), hash.DigestSize(), true, new CryptoPP::HexEncoder(
-        new CryptoPP::StringSink(encoded)
-    ));
+    fromHashToHex(result, encoded, hash.DigestSize());
     return (encoded);
 }
 
@@ -180,4 +177,25 @@ std::string lau::Core::hashString(const std::string &toHash)
         new CryptoPP::StringSink(encoded)
     ));
     return (result);
+}
+
+void lau::Core::fromHashToHex(const std::string &src, std::string &dest, int size)
+{
+    CryptoPP::StringSource ss((const CryptoPP::byte *)src.data(), size, true, new CryptoPP::HexEncoder(
+        new CryptoPP::StringSink(dest)
+    ));
+}
+
+void lau::Core::fromHashToHex(const CryptoPP::byte *src, std::string &dest, int size)
+{
+    CryptoPP::StringSource ss(src, size, true, new CryptoPP::HexEncoder(
+        new CryptoPP::StringSink(dest)
+    ));
+}
+
+void lau::Core::fromHexToHash(const std::string &src, std::string &dest)
+{
+    CryptoPP::StringSource ssalt((const CryptoPP::byte *)src.data(), src.size(), true, new CryptoPP::HexDecoder(
+        new CryptoPP::StringSink(dest)
+    ));
 }
