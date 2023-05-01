@@ -1,10 +1,11 @@
 #pragma once
 // #include "MySqlDb.hpp"
 #include "Database.hpp"
-#include "Server.hpp"
+#include "TCP/server/Server.hpp"
 #include "Config.h"
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
 
 #define TABLE "clientest"
 

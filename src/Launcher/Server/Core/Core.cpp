@@ -48,32 +48,21 @@ void lau::Core::signup(const json &req, tcp::Connection &con)
         return missingArguments(con, "data.password");
     std::string salt = generateSalt(); 
     std::string password = hashString(req["data"]["password"], salt);
-    // json sqlQuery = {
-    //     {"command", "insertSignupLauncher"},
-    //     {"table", TABLE},
-    //     // {"fields", {"pseudo", "password", "kslt"}},
-    //     {"data", {req["data"]["pseudo"], password, salt}}
-    // };
-
     std::string sqlQuery = "insert into clientest (pseudo, password, kslt)\n"
     "values (?, ?, ?)";
 
     
 
-    json sqlResult = _db.executeQuery(sqlQuery, std::make_tuple(req["data"]["pseudo"].get<std::string>(), password, salt));
-    // json sqlResult = _db->executeQuery(sqlQuery);
+    json sqlResult = _db.executeQuery(sqlQuery, std::make_tuple(req["data"]["pseudo"].get<std::string>(), password.c_str(), salt));
     
     if (sqlResult["code"] != dtb::OK) {
-        con.writeMessage(sqlResult);
+        con.writeMessage(sqlResult.dump());
     } else {
         con.writeMessage(json{
             {"message", "succesfully signed up"},
             {"code", OK}
-        });
+        }.dump());
     }
-    // json toSend = {{"message", sqlResult["message"]}, {"code", sqlResult["code"]}};
-
-    // con.writeMessage(toSend.dump());
 }
 
 void lau::Core::login(const json &req, tcp::Connection &con)
@@ -141,24 +130,38 @@ std::string lau::Core::generateSalt()
 {
     const unsigned int BLOCKSIZE = 16 * 8;
     CryptoPP::SecByteBlock scratch(BLOCKSIZE);
+    std::string encoded;
 
     CryptoPP::AutoSeededRandomPool rng;
 
     rng.GenerateBlock(scratch, scratch.size());
-    return (std::string((const char *)scratch.data(), scratch.size()));
+    CryptoPP::StringSource ss((const CryptoPP::byte *)scratch, 32, true, new CryptoPP::HexEncoder(
+        new CryptoPP::StringSink(encoded)
+    ));
+    return (encoded);
 }
 
 std::string lau::Core::hashString(const std::string &toHash, const std::string &st)
 {
-    std::string salt = st;
+    std::string salt;
     std::string result;
     CryptoPP::SHA256 hash;
+    std::string encoded;
+
+    CryptoPP::StringSource ssalt((const CryptoPP::byte *)st.data(), st.size(), true, new CryptoPP::HexDecoder(
+        new CryptoPP::StringSink(salt)
+    ));
 
     salt += toHash;
     hash.Update((const CryptoPP::byte *)salt.data(), salt.size());
     result.resize(hash.DigestSize());
     hash.Final((CryptoPP::byte *)&result[0]);
-    return (result);
+
+
+    CryptoPP::StringSource ss((const CryptoPP::byte *)result.data(), hash.DigestSize(), true, new CryptoPP::HexEncoder(
+        new CryptoPP::StringSink(encoded)
+    ));
+    return (encoded);
 }
 
 std::string lau::Core::hashString(const std::string &toHash)
@@ -166,10 +169,15 @@ std::string lau::Core::hashString(const std::string &toHash)
     std::string salt = generateSalt();
     std::string result;
     CryptoPP::SHA256 hash;
+    std::string encoded;
 
     salt += toHash;
     hash.Update((const CryptoPP::byte *)salt.data(), salt.size());
     result.resize(hash.DigestSize());
     hash.Final((CryptoPP::byte *)&result[0]);
+
+    CryptoPP::StringSource ss((const CryptoPP::byte *)result.data(), hash.DigestSize(), true, new CryptoPP::HexEncoder(
+        new CryptoPP::StringSink(encoded)
+    ));
     return (result);
 }
