@@ -1,8 +1,7 @@
 #include "Database.hpp"
 
-dtb::Database::Database(const std::string &filepath): _filepath(filepath), _ssl_ctx(boost::asio::ssl::context::tls_client), _con(_ctx.get_executor(), _ssl_ctx)
+dtb::Database::Database(const std::string &filepath) : _filepath(filepath), _ssl_ctx(boost::asio::ssl::context::tls_client), _con(_ctx.get_executor(), _ssl_ctx)
 {
-
 }
 
 using nlohmann::json;
@@ -21,9 +20,11 @@ bool dtb::Database::connect()
     int port = 0;
     std::ifstream envF(_filepath);
 
-    try {
-         std::string line;
-        while (std::getline(envF, line)) {
+    try
+    {
+        std::string line;
+        while (std::getline(envF, line))
+        {
             if (line.find("HOST") != line.npos)
                 host = line.substr(line.find("= ") + 2);
             else if (line.find("USER") != line.npos)
@@ -35,12 +36,11 @@ bool dtb::Database::connect()
             else if (line.find("PORT") != line.npos)
                 port = atoi(line.substr(line.find("= ") + 2).c_str());
         }
-        
+
         boost::mysql::handshake_params params(
             user,
             password,
-            database
-        );
+            database);
         boost::asio::ip::tcp::resolver resol(_ctx.get_executor());
         auto endpoints = resol.resolve(host, boost::mysql::default_port_string);
 
@@ -48,7 +48,9 @@ bool dtb::Database::connect()
         _con.connect(*endpoints.begin(), params);
         envF.close();
         return true;
-    } catch (boost::mysql::error_with_diagnostics &e) {
+    }
+    catch (boost::mysql::error_with_diagnostics &e)
+    {
         std::cerr << "Error: " << e.what() << '\n'
                   << "Server diagnostics: " << e.get_diagnostics().server_message() << std::endl;
         return false;
@@ -76,3 +78,29 @@ bool dtb::Database::connect()
 //         };
 //     }
 // }
+
+json dtb::Database::selectLoginLauncher(std::tuple<std::string> params)
+{
+    try
+    {
+        std::string query = "select pseudo, kslt, password from clientest\n"
+                            "where pseudo = ?";
+        boost::mysql::statement stmt = _con.prepare_statement(query);
+
+        boost::mysql::results res;
+        _con.execute_statement(stmt, params, res);
+        return nlohmann::json{
+            {"pseudo", res.rows().at(0).at(0).as_string()},
+            {"kslt", res.rows().at(0).at(1).as_string()},
+            {"password", res.rows().at(0).at(2).as_string()},
+            {"code", OK}};
+    }
+    catch (boost::mysql::error_with_diagnostics &e)
+    {
+        std::cerr << "Error: " << e.what() << '\n'
+                  << "Server diagnostics: " << e.get_diagnostics().server_message() << std::endl;
+        return nlohmann::json{
+            {"message", e.get_diagnostics().server_message()},
+            {"code", e.code().value()}};
+    }
+}

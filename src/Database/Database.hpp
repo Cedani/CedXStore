@@ -5,9 +5,11 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl/context.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/utility/string_view.hpp>
 #include <fstream>
 #include <tuple>
 #include <nlohmann/json.hpp>
+#include <unordered_map>
 
 namespace dtb
 {
@@ -53,11 +55,15 @@ namespace dtb
             }
         };
 
+        nlohmann::json selectLoginLauncher(std::tuple<std::string>);
+
     private:
         boost::asio::io_context _ctx;
         boost::asio::ssl::context _ssl_ctx;
         boost::mysql::tcp_ssl_connection _con;
         std::string _filepath;
+        // std::unordered_map<std::string, std::function<void()
+        
 
         // void addSelectQuery();
 

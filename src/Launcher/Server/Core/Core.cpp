@@ -73,28 +73,22 @@ void lau::Core::login(const json &req, tcp::Connection &con)
         return missingArguments(con, "data.pseudo");
     if (req["data"].find("password") == req.end())
         return missingArguments(con, "data.password");
-    json sqlQuery = {
-        {"command", "select"},
-        {"table", TABLE},
-        {"fields", {"pseudo", "password", "kslt"}},
-        {"where", {
-            {{"label", "pseudo"}, {"operator", "="}}
-        }},
-        {"data", {
-            {{"label", "pseudo"}, {"value", req["data"]["pseudo"]}}
-        }}
-    };
+    // json sqlQuery = {
+    //     {"command", "select"},
+    //     {"table", TABLE},
+    //     {"fields", {"pseudo", "password", "kslt"}},
+    //     {"where", {
+    //         {{"label", "pseudo"}, {"operator", "="}}
+    //     }},
+    //     {"data", {
+    //         {{"label", "pseudo"}, {"value", req["data"]["pseudo"]}}
+    //     }}
+    // };
 
-    json sqlResult;
+    json sqlResult = _db.selectLoginLauncher(std::make_tuple(req["data"]["pseudo"].get<std::string>()));
     // json sqlResult = _db->executeQuery(sqlQuery);
-    json toSend;
     
     if (sqlResult["code"] != dtb::OK) {
-        con.writeMessage(sqlResult);
-        return;
-    }
-
-    if (sqlResult.find("data") == sqlResult.end()) {
         con.writeMessage(json{
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
@@ -102,10 +96,11 @@ void lau::Core::login(const json &req, tcp::Connection &con)
         return;
     }
 
-    std::string salt = sqlResult["data"]["kslt"]; 
-    std::string password = hashString(sqlResult["data"]["password"], salt);
+    std::string salt;
+    fromHexToHash(sqlResult["kslt"], salt); 
+    // std::string password = hashString(sqlResult["data"]["password"], salt);
 
-    if (password != sqlQuery["data"]["password"])
+    if (hashString(sqlResult["password"], salt) != sqlResult["password"])
         con.writeMessage(json{
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
@@ -113,6 +108,7 @@ void lau::Core::login(const json &req, tcp::Connection &con)
     else
         con.writeMessage(json{
             {"message", "connection succedded"},
+            {"pseudo", sqlResult["pseudo"]},
             {"code", OK}
         });
 }
