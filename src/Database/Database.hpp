@@ -6,6 +6,7 @@
 #include <boost/asio/ssl/context.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/utility/string_view.hpp>
+#include <boost/mysql/blob.hpp>
 #include <fstream>
 #include <tuple>
 #include <nlohmann/json.hpp>

@@ -65,52 +65,38 @@ void lau::Core::signup(const json &req, tcp::Connection &con)
     }
 }
 
+
+
 void lau::Core::login(const json &req, tcp::Connection &con)
 {
     if (req.find("data") == req.end())
         return missingArguments(con, "data");
-    if (req["data"].find("pseudo") == req.end())
+    if (req["data"].find("pseudo") == req["data"].end())
         return missingArguments(con, "data.pseudo");
-    if (req["data"].find("password") == req.end())
+    if (req["data"].find("password") == req["data"].end())
         return missingArguments(con, "data.password");
-    // json sqlQuery = {
-    //     {"command", "select"},
-    //     {"table", TABLE},
-    //     {"fields", {"pseudo", "password", "kslt"}},
-    //     {"where", {
-    //         {{"label", "pseudo"}, {"operator", "="}}
-    //     }},
-    //     {"data", {
-    //         {{"label", "pseudo"}, {"value", req["data"]["pseudo"]}}
-    //     }}
-    // };
 
     json sqlResult = _db.selectLoginLauncher(std::make_tuple(req["data"]["pseudo"].get<std::string>()));
-    // json sqlResult = _db->executeQuery(sqlQuery);
     
     if (sqlResult["code"] != dtb::OK) {
         con.writeMessage(json{
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
-        });
+        }.dump());
         return;
     }
 
-    std::string salt;
-    fromHexToHash(sqlResult["kslt"], salt); 
-    // std::string password = hashString(sqlResult["data"]["password"], salt);
-
-    if (hashString(sqlResult["password"], salt) != sqlResult["password"])
+    if (hashString(req["data"]["password"], sqlResult["kslt"]) != sqlResult["password"])
         con.writeMessage(json{
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
-        });
+        }.dump());
     else
         con.writeMessage(json{
             {"message", "connection succedded"},
             {"pseudo", sqlResult["pseudo"]},
             {"code", OK}
-        });
+        }.dump());
 }
 
 void lau::Core::missingArguments(tcp::Connection &cli, const std::string &arg)
@@ -128,14 +114,16 @@ std::string lau::Core::generateSalt()
     CryptoPP::SecByteBlock scratch(BLOCKSIZE);
     std::string encoded;
 
+    // std::cout << scratch.SizeInBytes() << std::endl;
     CryptoPP::AutoSeededRandomPool rng;
 
     rng.GenerateBlock(scratch, scratch.size());
     // CryptoPP::StringSource ss((const CryptoPP::byte *)scratch, 32, true, new CryptoPP::HexEncoder(
     //     new CryptoPP::StringSink(encoded)
     // ));
-    fromHashToHex((const CryptoPP::byte *)scratch, encoded, 32);
+    fromHashToHex(scratch, encoded, scratch.size() / 4);
     return (encoded);
+    // return std::string((const char *)scratch.data(), scratch.size());
 }
 
 std::string lau::Core::hashString(const std::string &toHash, const std::string &st)
@@ -155,6 +143,7 @@ std::string lau::Core::hashString(const std::string &toHash, const std::string &
 
     fromHashToHex(result, encoded, hash.DigestSize());
     return (encoded);
+    // return result;
 }
 
 std::string lau::Core::hashString(const std::string &toHash)
@@ -182,9 +171,10 @@ void lau::Core::fromHashToHex(const std::string &src, std::string &dest, int siz
     ));
 }
 
-void lau::Core::fromHashToHex(const CryptoPP::byte *src, std::string &dest, int size)
+void lau::Core::fromHashToHex(CryptoPP::SecByteBlock &src, std::string &dest, int size)
 {
-    CryptoPP::StringSource ss(src, size, true, new CryptoPP::HexEncoder(
+    sizeof(CryptoPP::SecByteBlock);
+    CryptoPP::StringSource ss(src.BytePtr(), size, true, new CryptoPP::HexEncoder(
         new CryptoPP::StringSink(dest)
     ));
 }
