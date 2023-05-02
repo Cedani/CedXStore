@@ -94,10 +94,15 @@ json dtb::Database::selectLoginLauncher(std::tuple<std::string> params)
         boost::mysql::field pseudo(myRow.at(0));
         boost::mysql::field kslt(myRow.at(1));
         boost::mysql::field password(myRow.at(2));
+        // return nlohmann::json{
+        //     {"pseudo", pseudo.as_string()},
+        //     {"kslt", kslt.as_string()},
+        //     {"password", password.as_string()},
+        //     {"code", OK}};
         return nlohmann::json{
             {"pseudo", pseudo.as_string()},
-            {"kslt", kslt.as_string()},
-            {"password", password.as_string()},
+            {"kslt", std::string(kslt.as_blob().begin(), kslt.as_blob().end())},
+            {"password", std::string(password.as_blob().begin(), password.as_blob().end())},
             {"code", OK}};
     }
     catch (boost::mysql::error_with_diagnostics &e)
