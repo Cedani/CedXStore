@@ -112,7 +112,7 @@ std::string lau::Core::generateSalt()
 {
     const unsigned int BLOCKSIZE = 64;
     CryptoPP::SecByteBlock scratch(BLOCKSIZE);
-    // std::string encoded;
+    std::string encoded;
 
     // std::cout << scratch.SizeInBytes() << std::endl;
     CryptoPP::AutoSeededRandomPool rng;
@@ -121,9 +121,9 @@ std::string lau::Core::generateSalt()
     // CryptoPP::StringSource ss((const CryptoPP::byte *)scratch, 32, true, new CryptoPP::HexEncoder(
     //     new CryptoPP::StringSink(encoded)
     // ));
-    // fromHashToHex(scratch, encoded, scratch.size() / 4);
-    // return (encoded);
-    return std::string((const char *)scratch.data(), scratch.size());
+    fromHashToHex(scratch, encoded, scratch.size() / 4);
+    return (encoded);
+    // return std::string((const char *)scratch.data(), scratch.size());
 }
 
 std::string lau::Core::hashString(const std::string &toHash, const std::string &st)
@@ -133,7 +133,7 @@ std::string lau::Core::hashString(const std::string &toHash, const std::string &
     CryptoPP::SHA256 hash;
     std::string encoded;
 
-    // fromHexToHash(st, salt);
+    fromHexToHash(st, salt);
 
     salt += toHash;
     hash.Update((const CryptoPP::byte *)salt.data(), salt.size());
@@ -141,9 +141,9 @@ std::string lau::Core::hashString(const std::string &toHash, const std::string &
     hash.Final((CryptoPP::byte *)&result[0]);
 
 
-    // fromHashToHex(result, encoded, hash.DigestSize());
-    // return (encoded);
-    return result;
+    fromHashToHex(result, encoded, hash.DigestSize());
+    return (encoded);
+    // return result;
 }
 
 std::string lau::Core::hashString(const std::string &toHash)
