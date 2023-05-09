@@ -116,8 +116,6 @@ void lau::Core::login(const json &req, tcp::Connection &con)
             {"code", WRONG}
         }.dump());
     else {
-        if (req["data"].find("rememberMe") == req["data"].end())
-            return;
         std::string token = generateToken();
         std::string query = "update clientest\n"
                         "set token=?, tokenExpiration=adddate(current_timestamp(), interval ? day)\n"
