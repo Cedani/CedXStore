@@ -41,7 +41,7 @@ void tcp::Connection::readMessage()
             try {
                 {
                     std::unique_lock<std::shared_mutex> _lock(_mutex);
-                    parseRead();
+                    parseRead();    
                     if (_messageEnd) {
                         // _requests.push_back(json::parse(_finishedBuffer));
                         _messageEnd = false;
@@ -73,6 +73,7 @@ void tcp::Connection::readMessage()
 
 void tcp::Connection::writeMessage(const std::string &msg)
 {
+    std::shared_lock lock(_mutex);
     std::memset(_toSend, 0, MSGMAXW);
     std::memcpy(_toSend, msg.data(), msg.size());
     boost::asio::async_write(_socket, boost::asio::buffer(_toSend, msg.size()), [this](boost::system::error_code ec, std::size_t len) {

@@ -6,6 +6,7 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
+#include <cryptopp/base64.h>
 
 #define TABLE "clientest"
 
@@ -13,7 +14,10 @@
 namespace lau {
     typedef enum lerror_s {
         OK = 200,
-        WRONG = 400
+        LOGGEDIN = 201,
+        SIGNEDUP = 202,
+        WRONG = 400,
+        RELOG = 401,
     }lerror;
     class Core {
         public: 
@@ -30,6 +34,7 @@ namespace lau {
             dtb::Database _db;
             tcp::Server _server;
             void missingArguments(tcp::Connection &, const std::string &);
+            int _tokenExpiration;
 
         private:
 
@@ -40,16 +45,23 @@ namespace lau {
 
             //function used for login 
             void login(const nlohmann::json &, tcp::Connection &);
+            void loginToken(const nlohmann::json &, tcp::Connection &);
 
             void signup(const nlohmann::json &, tcp::Connection &);
 
             // hash functions for passwords
             std::string hashString(const std::string &toHash);
             std::string hashString(const std::string &toHash, const std::string &st);
-            std::string generateSalt();
+            std::string generateSalt(bool hex);
             void fromHashToHex(const std::string &, std::string &, int);
             void fromHashToHex(CryptoPP::SecByteBlock &, std::string &, int);
             void fromHexToHash(const std::string &, std::string &);
+
+            //token function
+            void fromHashToBase64(const std::string &, std::string &);
+            void fromBase64ToHash(const std::string &, std::string &);
+            std::string generateToken();
+            bool verifyToken(const std::string &, const std::string &, tcp::Connection &con);
 
             //utils
             void sendSuccess(const nlohmann::json &);

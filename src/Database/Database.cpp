@@ -114,3 +114,29 @@ json dtb::Database::selectLoginLauncher(std::tuple<std::string> params)
             {"code", e.code().value()}};
     }
 }
+
+nlohmann::json dtb::Database::selectToken(std::tuple<std::string, std::string>params)
+{
+    try {
+        std::string query = "select\n"
+                            "(select token from clientest where pseudo = ? ) as token,\n"
+                            "current_timestamp() < (select tokenExpiration from clientest where pseudo= ? ) as isValid;";
+        boost::mysql::statement stmt = _con.prepare_statement(query);
+        boost::mysql::results res;
+        
+        _con.execute_statement(stmt, params, res);
+        boost::mysql::field token(res.rows().at(0).at(0));
+        boost::mysql::field isValid(res.rows().at(0).at(1));
+        return json{
+            {"token", token.as_string()},
+            {"isValid", (bool)(isValid.as_int64())},
+            {"code", OK}
+        };
+    } catch (boost::mysql::error_with_diagnostics &e) {
+        std::cerr << "Error: " << e.what() << '\n'
+                  << "Server diagnostics: " << e.get_diagnostics().server_message() << std::endl;
+        return nlohmann::json{
+            {"message", e.get_diagnostics().server_message()},
+            {"code", e.code().value()}};
+    }
+}
