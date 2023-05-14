@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Connection::Connection(boost::asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, boost::shared_ptr<Connection>)> &func): _socket(std::move(socket)), _isConnected(true), addRequest(func)
+tcp::Connection::Connection(boost::asio::ip::tcp::socket &socket, const std::function<void(const nlohmann::json &, Connection &)> &func): _socket(std::move(socket)), _isConnected(true), addRequest(func)
 {
 
 }
@@ -45,7 +45,7 @@ void tcp::Connection::readMessage()
                     if (_messageEnd) {
                         // _requests.push_back(json::parse(_finishedBuffer));
                         _messageEnd = false;
-                        addRequest(json::parse(_finishedBuffer), this->shared_from_this());
+                        addRequest(json::parse(_finishedBuffer), *this);
                         _finishedBuffer.clear();
                     }
                 }

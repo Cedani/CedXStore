@@ -35,6 +35,7 @@ namespace lau {
             tcp::Server _server;
             void missingArguments(tcp::Connection &, const std::string &);
             int _tokenExpiration;
+            std::atomic_bool _stopServer;
 
         private:
 

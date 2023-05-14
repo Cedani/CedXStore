@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-tcp::Server::Server(int port): _guard(boost::asio::make_work_guard(_io)),_acceptor(_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0)
+tcp::Server::Server(std::atomic_bool &st, int port): _guard(boost::asio::make_work_guard(_io)),_acceptor(_io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)), _threadPool(10), _started(false), _nbClient(0), _stop(st)
 {
     _threadPool.init();
 }
@@ -47,12 +47,18 @@ void tcp::Server::waitConnections()
             std::cout << "[ARCADE TCP SERVER]: new connection detected " << socket.remote_endpoint() << std::endl;
             {
                 // std::unique_lock<std::shared_mutex> lock(_mutex);
-                _clients.push_back(boost::make_shared<Connection>(socket, [this](const json &req, boost::shared_ptr<Connection> con) {
-                    _requests.emplace_back(con, req);
-                    {
-                        std::unique_lock<std::shared_mutex> lock(_mutex);
-                        _waiter.notify_one();
-                    }
+                _clients.push_back(std::make_unique<Connection>(socket, [this](const json &req, Connection &con) {
+                    // _requests.emplace_back(con, req);
+                    // {
+                    //     std::unique_lock<std::shared_mutex> lock(_mutex);
+                    //     _waiter.notify_one();
+                    // }
+                    if (req.find("command") == req.end())
+                        return noRouteFound(con);
+                    else if (_routes.find(req["command"]) == _routes.end())
+                        return badCommand(con);
+                    else
+                        _threadPool.addNewTask(_routes[req["command"]], req, std::ref(con));
                 }));
                 _clients.back()->readMessage();
                 toSend["socketAdress"] = _clients.back()->getSocket().remote_endpoint().address().to_string();
@@ -84,23 +90,25 @@ void tcp::Server::update()
     {
         std::unique_lock<std::shared_mutex> lock(_mutex);
         _waiter.wait(lock, [this]() {
-            return _requests.size() > 0;
+            // return _requests.size() > 0;
+            return _stop.load();
         });
     }
-    std::size_t queueSize = _requests.size();
-    for (std::size_t i = 0; i < queueSize; ++i) {
-        request req;
-        _requests.pop(req);
-        if (req._req.find("command") == req._req.end()) {
-            noRouteFound(*(req._con));
-            continue;
-        } else if (_routes.find(req._req["command"]) == _routes.end()) {
-            badCommand(*(req._con));
-            continue;
-        } else {
-            _threadPool.addNewTask(_routes[req._req["command"]], req._req, std::ref(*(req._con)));
-        }
-    }
+    // std::size_t queueSize = _requests.size();
+    // std::unique_ptr<request> req;
+    // for (std::size_t i = 0; i < queueSize; ++i) {
+    //     // req =
+    //     _requests.pop(*req);
+    //     if (req->_req.find("command") == req->_req.end()) {
+    //         noRouteFound((req->_con));
+    //         continue;
+    //     } else if (_routes.find(req->_req["command"]) == _routes.end()) {
+    //         badCommand((req->_con));
+    //         continue;
+    //     } else {
+    //         _threadPool.addNewTask(_routes[req->_req["command"]], req->_req, std::ref((req->_con)));
+    //     }
+    // }
 }
 
 // void tcp::Server::handleCommand(Connection &cli)
@@ -148,14 +156,14 @@ void tcp::Server::noRouteFound(Connection &con)
     con.writeMessage(toSend.dump());
 }
 
-void tcp::Server::missingArguments(Connection &cli, const std::string &argName)
-{
-    json msg = {
-        {"StatusCode", ERROR_ARCARDE_SERVER_BAD_ARGUMENTS},
-        {"Message", "Fields " + argName + " is missing"}
-    };
-    cli.writeMessage(msg.dump());
-}
+// void tcp::Server::missingArguments(Connection &cli, const std::string &argName)
+// {
+//     json msg = {
+//         {"StatusCode", ERROR_ARCARDE_SERVER_BAD_ARGUMENTS},
+//         {"Message", "Fields " + argName + " is missing"}
+//     };
+//     cli.writeMessage(msg.dump());
+// }
 
 // // void tcp::Server::createRoom(json query, Connection &cli)
 // // {
@@ -210,3 +218,8 @@ void tcp::Server::missingArguments(Connection &cli, const std::string &argName)
 // //         return missingArguments(cli, "data.roomName");
 // //     cli.writeMessage(_roomHandler.quitRoom(query["data"]["name"], std::string(query["data"]["roomName"])));
 // // }
+
+void tcp::Server::notifyStop()
+{
+    _waiter.notify_one();
+}

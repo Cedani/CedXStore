@@ -20,6 +20,7 @@ include($ENV{VcpkgPath})
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 set(LIB_DTB_ENV_PATH "${CMAKE_SOURCE_DIR}/utils/env")
+set(TEMP_ENDPOINT "${CMAKE_SOURCE_DIR}/utils/endpoint")
 set(RESOURCES "${CMAKE_SOURCE_DIR}/Resources/")
 set(SQL_PATH $ENV{MySqlPath})
 include_directories(

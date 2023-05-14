@@ -2,7 +2,7 @@
 
 using nlohmann::json;
 
-lau::Core::Core(int port): _port(port), _db(LIB_DTB_ENV_PATH), _tokenExpiration(2)
+lau::Core::Core(int port): _port(port), _db(LIB_DTB_ENV_PATH), _tokenExpiration(2), _stopServer(false), _server(_stopServer)
 {
 
 }
@@ -23,9 +23,9 @@ void lau::Core::run()
         std::cout << "[LauncherServer]: Server cannot be started" << std::endl;
         exit(EXIT_FAILURE);
     }
-    while (1) {
-        _server.update();
-    }
+    // while (1) {
+    _server.update();
+    // }
 }
 
 void lau::Core::addRoute()
