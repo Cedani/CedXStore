@@ -12,7 +12,7 @@ bool lau::Client::connectToServer()
     std::ifstream endPointFile(TEMP_ENDPOINT);
 
     if (!endPointFile.is_open())
-        return;
+        return false;
     std::string port;
     std::string hostName;
     // int port;
@@ -48,7 +48,7 @@ bool lau::Client::writeMessage(const std::string &msg)
     std::memset(_write, 0, MSGMAXW);
     std::memcpy(_write, msg.data(), msg.size());
     boost::system::error_code ec;
-    _sock.write_some(_write, ec);
+    _sock.write_some(boost::asio::buffer(_write, msg.size()), ec);
     if (!ec) {
         std::cout << "[ARCADE TCP CLIENT]: Message has been succesfully sent to Server" << std::endl;
         return true;

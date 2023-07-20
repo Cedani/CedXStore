@@ -8,6 +8,7 @@
 #define MSGMAXW 1024
 #define MSGMAXR 2048
 
+
 namespace lau {
     class Client {
         public:

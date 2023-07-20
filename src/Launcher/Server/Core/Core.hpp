@@ -18,6 +18,7 @@ namespace lau {
         SIGNEDUP = 202,
         WRONG = 400,
         RELOG = 401,
+        MISSING_ARGS = 402 
     }lerror;
     class Core {
         public: 
@@ -48,7 +49,20 @@ namespace lau {
             void login(const nlohmann::json &, tcp::Connection &);
             void loginToken(const nlohmann::json &, tcp::Connection &);
 
+            //signup functions
             void signup(const nlohmann::json &, tcp::Connection &);
+            void checkPseudoAvailability(const nlohmann::json &, tcp::Connection &);
+
+            //friends function
+            void postFriendsRequest(const nlohmann::json &, tcp::Connection &);
+            void acceptFriendRequest(const nlohmann::json &, tcp::Connection &);
+
+
+            // friends
+            void sendFriendsRequest(const nlohmann::json &, tcp::Connection &);
+            void searchProfile(const nlohmann::json &, tcp::Connection &);
+
+            //
 
             // hash functions for passwords
             std::string hashString(const std::string &toHash);

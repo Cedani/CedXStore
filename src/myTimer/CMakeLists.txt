@@ -1,0 +1,7 @@
+add_library(Timer SHARED myTimer.cpp)
+target_include_directories(Timer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+set_target_properties(Timer PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/"
+)

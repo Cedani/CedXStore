@@ -37,7 +37,7 @@ void lau::Window::initPanel()
 
 void lau::Window::OnAbout(wxCommandEvent &evt)
 {
-    wxGetApp().printer();
+    // wxGetApp().printer();
     
 }
 

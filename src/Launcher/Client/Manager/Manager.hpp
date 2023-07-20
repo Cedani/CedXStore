@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
 #include <thread>
-#include "App.hpp"
+#include <nlohmann/json.hpp>
+#include "Client.hpp"
+#include "myUtils.hpp"
 
 namespace lau {
     class Manager {
@@ -9,15 +11,23 @@ namespace lau {
             Manager();
             ~Manager();
 
+            void initClientLogin();
+
+            //check if pseudo is availble
+            nlohmann::json checkPseudoAvailability(const char *);
+            // void initMainClient();
+
+
 
         // methods
         private:
 
-
-
         // members
         private:
-            
+            // Principal client and thread
+            // std::thread mainClientThread;
+            Client _mainClient;
+            // thp::ThreadPool _threadPool;
 
     };
 }

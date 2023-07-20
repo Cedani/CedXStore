@@ -82,9 +82,10 @@ add_subdirectory(src/ThreadPool)
 add_subdirectory(src/Database)
 add_subdirectory(src/TCP/server)
 add_subdirectory(src/Launcher)
+add_subdirectory(src/myTimer)
 
 
 add_executable(Arcade ${PROJECT_SRC})
-target_link_libraries(Arcade PRIVATE LibDatabase LibTcpServer LibThread ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Arcade PRIVATE Timer LibDatabase LibTcpServer LibThread ${CMAKE_THREAD_LIBS_INIT})
 # target_link_libraries(Arcade PRIVATE LibDatabase ${MYSQLPP32})
 

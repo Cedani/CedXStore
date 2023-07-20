@@ -58,6 +58,7 @@ namespace dtb
 
         nlohmann::json selectLoginLauncher(std::tuple<std::string>);
         nlohmann::json selectToken(std::tuple<std::string, std::string>);
+        nlohmann::json selectPseudoAvailability(std::tuple<std::string>);
 
     private:
         boost::asio::io_context _ctx;

@@ -140,3 +140,27 @@ nlohmann::json dtb::Database::selectToken(std::tuple<std::string, std::string>pa
             {"code", e.code().value()}};
     }
 }
+
+nlohmann::json dtb::Database::selectPseudoAvailability(std::tuple<std::string> params)
+{
+    try {
+        std::string query = "select pseudo from clientest where pseudo = ?\n";
+        boost::mysql::statement stmt= _con.prepare_statement(query);
+        boost::mysql::results res;
+
+        _con.execute_statement(stmt, params, res);
+        std::cout << res.rows().size() << std::endl;
+        return json{
+            {"service", "Login"},
+            {"command", "login"},
+            {"isAvailable", ((res.rows().size() > 0) ? false : true)},
+            {"code", OK}
+        };
+    } catch (boost::mysql::error_with_diagnostics &e) {
+        std::cerr << "Error: " << e.what() << '\n'
+                  << "Server diagnostics: " << e.get_diagnostics().server_message() << std::endl;
+        return nlohmann::json{
+            {"message", e.get_diagnostics().server_message()},
+            {"code", e.code().value()}};
+    }
+}

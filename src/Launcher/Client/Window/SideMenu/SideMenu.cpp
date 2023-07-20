@@ -29,6 +29,17 @@ void lau::SideMenu::initPanel()
 void lau::SideMenu::initButtons()
 {
     _Library = new MyButton(_panel, _mBox, _("Library"), _("Images/library.png"));
+    _Library->bindClickFunction([this](wxCommandEvent &) {
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_int_distribution<int> dist(0, 255);
+
+        unsigned char r = dist(mt);
+        unsigned char g = dist(mt);
+        unsigned char b = dist(mt);
+        _Library->setHoverBackgroundColor(wxColor(r, g, b));
+        _Library->refreshGraphicsEvent();
+    });
     _Store = new MyButton(_panel, _mBox, _("Store"), _("Images/shop.png"));
     _Downloads = new MyButton(_panel, _mBox, _("Download"), _("Images/download.png"));
 

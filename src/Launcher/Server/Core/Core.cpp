@@ -39,6 +39,14 @@ void lau::Core::addRoute()
     _server.addRoute("signup", [this](const json &j, tcp::Connection &c) {
         signup(j, c);
     });
+    _server.addRoute("ping", [this](const json &j, tcp::Connection &c) {
+        c.writeMessage(json{
+            {"message", "pong"}
+        }.dump() + "\r\n");
+    });
+    _server.addRoute("pseudoAvailability", [this](const json &j, tcp::Connection &c) {
+        checkPseudoAvailability(j, c);
+    });
 }
 
 void lau::Core::signup(const json &req, tcp::Connection &con)
@@ -59,9 +67,16 @@ void lau::Core::signup(const json &req, tcp::Connection &con)
     json sqlResult = _db.executeQuery(sqlQuery, std::make_tuple(req["data"]["pseudo"].get<std::string>(), password.c_str(), salt));
     
     if (sqlResult["code"] != dtb::OK) {
-        con.writeMessage(sqlResult.dump());
+        json tmp = json{
+            {"service", "Login"},
+            {"command", "login"}
+        };
+        tmp += sqlResult;
+        con.writeMessage(tmp.dump());
     } else {
         con.writeMessage(json{
+            {"service", "Login"},
+            {"command", "login"},
             {"message", "succesfully signed up"},
             {"code", OK}
         }.dump());
@@ -80,6 +95,8 @@ void lau::Core::loginToken(const json &req, tcp::Connection &con)
     if (!verifyToken(req["data"]["pseudo"], req["data"]["token"], con))
         return;
     con.writeMessage(json{
+        {"service", "Login"},
+        {"command", "login"},
         {"message", "connection succedded"},
         {"pseudo", req["data"]["pseudo"]},
         {"code", LOGGEDIN}
@@ -104,6 +121,8 @@ void lau::Core::login(const json &req, tcp::Connection &con)
     
     if (sqlResult["code"] != dtb::OK) {
         con.writeMessage(json{
+            {"service", "Login"},
+            {"command", "login"},
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
         }.dump());
@@ -112,6 +131,8 @@ void lau::Core::login(const json &req, tcp::Connection &con)
 
     if (hashString(req["data"]["password"], sqlResult["kslt"]) != sqlResult["password"])
         con.writeMessage(json{
+            {"service", "Login"},
+            {"command", "login"},
             {"message", "incorrect pseudo or password"},
             {"code", WRONG}
         }.dump());
@@ -122,6 +143,8 @@ void lau::Core::login(const json &req, tcp::Connection &con)
                         "where pseudo=?";
         _db.executeQuery(query, std::make_tuple(token, _tokenExpiration, sqlResult["pseudo"].get<std::string>()));
         con.writeMessage(json{
+            {"service", "Login"},
+            {"command", "login"},
             {"message", "connection succedded"},
             {"pseudo", sqlResult["pseudo"]},
             {"token", token},
@@ -134,7 +157,8 @@ void lau::Core::missingArguments(tcp::Connection &cli, const std::string &arg)
 {
     json msg = {
         {"StatusCode", ERROR_ARCARDE_SERVER_BAD_ARGUMENTS},
-        {"Message", "Fields " + arg + " is missing"}
+        {"Message", "Fields " + arg + " is missing"},
+        {"code", MISSING_ARGS}
     };
     cli.writeMessage(msg.dump());
 }
@@ -267,4 +291,15 @@ bool lau::Core::verifyToken(const std::string &pseudo, const std::string &token,
         return false;
     }
     return true;
+}
+
+void lau::Core::checkPseudoAvailability(const nlohmann::json & req, tcp::Connection &con)
+{
+    if (req.find("data") == req.end())
+        return missingArguments(con, "data");
+    if (req["data"].find("pseudo") == req["data"].end())
+        return missingArguments(con, "data.pseudo");
+    
+    json sqlResult = _db.selectPseudoAvailability(std::make_tuple(req["data"]["pseudo"].get<std::string>()));
+    con.writeMessage(sqlResult.dump());
 }

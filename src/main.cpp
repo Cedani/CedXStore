@@ -7,7 +7,7 @@
 #include "Config.h"
 #include <nlohmann/json.hpp>
 #include <time.h>
-
+#include "myTimer.hpp"
 
 using nlohmann::json;
 
@@ -69,30 +69,30 @@ void testInt(int num)
 
 int main(void)
 {
-    // using namespace std::chrono_literals;
+    // // using namespace std::chrono_literals;
     
-    // tcp::Server server(47920);
+    // // tcp::Server server(47920);
 
 
-    // if (!server.start())
-    //     exit(EXIT_FAILURE);
-    // // std::chrono::duration<float> mSeconds;
-    thp::ThreadPool thpo(10);
-    thpo.init();
-    thpo.addNewTask(testInt, 10);
-    thpo.addNewTask(testInt, 20);
-    thpo.addNewTask(testInt, 30);
-    thpo.addNewTask(testInt, 40);
-    thpo.addNewTask(testInt, 50);
-    thpo.addNewTask(testInt, 60);
-    thpo.addNewTask(testInt, 70);
-    thpo.addNewTask(testInt, 80);
-    thpo.addNewTask(testInt, 90);
-    thpo.addNewTask(testInt, 100);
-    thpo.addNewTask(testInt, 110);
+    // // if (!server.start())
+    // //     exit(EXIT_FAILURE);
+    // // // std::chrono::duration<float> mSeconds;
+    // thp::ThreadPool thpo(10);
+    // thpo.init();
+    // thpo.addNewTask(testInt, 10);
+    // thpo.addNewTask(testInt, 20);
+    // thpo.addNewTask(testInt, 30);
+    // thpo.addNewTask(testInt, 40);
+    // thpo.addNewTask(testInt, 50);
+    // thpo.addNewTask(testInt, 60);
+    // thpo.addNewTask(testInt, 70);
+    // thpo.addNewTask(testInt, 80);
+    // thpo.addNewTask(testInt, 90);
+    // thpo.addNewTask(testInt, 100);
+    // thpo.addNewTask(testInt, 110);
     // // std::chrono::steady_clock::time_point checkPoint = std::chrono::steady_clock::now();
 
-    while(1);
+    // while(1);
     // while (1)
     // {
     //     // mSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - checkPoint);
@@ -102,4 +102,22 @@ int main(void)
     //         // checkPoint = std::chrono::steady_clock::now();
     //     // }
     // }
+
+    tmr::myTimer timer;
+    tmr::myTimer timer2;
+    std::atomic_bool closeProgram = false;
+
+    timer.startTimer(5, [&closeProgram]() {
+        std::cout << "ca marche mon reuf" << std::endl;
+    });
+
+    timer2.startTimer(3, [&timer, &closeProgram]() {
+        std::cout << "bah non on reset tout ca mon reuf" << std::endl;
+        timer.resetTimer(5, [&closeProgram]{
+            std::cout  << "Bah on a change mon reuf" << std::endl;
+            closeProgram = true;
+        });
+    });
+
+    while(!closeProgram);
 }
