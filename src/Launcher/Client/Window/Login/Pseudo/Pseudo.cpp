@@ -4,7 +4,7 @@
 //     #include <windows.h>
 // #endif
 
-lau::Pseudo::Pseudo(wxPanel *parent, wxBoxSizer *pBox, std::function<void()> func): Label(parent, pBox, _("enter your pseudo")), _timerFunctor(func)
+lau::Pseudo::Pseudo(wxPanel *parent, wxBoxSizer *pBox, std::function<void()> func): Label(parent, pBox, _("enter your pseudo")), _timerFunctor(func), _isAvailable(false)
 {
     init();
 }
@@ -40,34 +40,16 @@ void lau::Pseudo::init()
 
     _input = new wxTextCtrl(_mPanel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize
         , wxTE_PROCESS_ENTER);
-    _input->Bind(wxEVT_TEXT, [this] (wxCommandEvent &) {
-        wxString value = _input->GetValue();
-
-        if (value.length() > MAX_STR_LENGTH) {
-            _input->ChangeValue(value.substr(0, MAX_STR_LENGTH));
-            _input->SetInsertionPointEnd();
-        }
-
-        if (_value.empty())
-            _timer.resetTimer();
-        else {
-            _timer.resetTimer(5, _timerFunctor);
-            _available->Show(false);
-        }
-    });
+    
+    bindEvents();
 
     _input->SetHint(_placeholder);
-
-
-
     setMaxSize(-1, 30);
     setPanelSizerBorder(wxEXPAND | wxTOP, 20);
     setSizerBorder(wxLEFT | wxALIGN_CENTER, 15);
 
     initLoading();
     initLabelAvailable();
-    _mPanel->Bind(EVENT_PSEUDO_AVAILABLE, [this] (wxCommandEvent & evt) {handlePseudoAvailable(evt);});
-    _mPanel->Bind(EVENT_PSEUDO_UNAVAILABLE, [this] (wxCommandEvent & evt) {handlePseudoUnavailable(evt);});
 }
 
 void lau::Pseudo::initHideElements()
@@ -85,7 +67,50 @@ void lau::Pseudo::handlePseudoAvailable(wxCommandEvent &)
 
 void lau::Pseudo::handlePseudoUnavailable(wxCommandEvent &)
 {
+    showLoading(false);
     _available->Show(true);
     _available->SetLabel(_input->GetValue() + _("is unavailable"));
     _available->SetForegroundColour(*wxRED);
 }
+
+void lau::Pseudo::showLoading(bool sh)
+{
+    _loading->Show(sh);
+}
+
+void lau::Pseudo::bindEvents()
+{
+    _input->Bind(wxEVT_TEXT, [this] (wxCommandEvent &) {
+        wxString value = _input->GetValue();
+
+        if (value.length() > MAX_STR_LENGTH) {
+            _input->ChangeValue(value.substr(0, MAX_STR_LENGTH));
+            _input->SetInsertionPointEnd();
+        }
+
+        if (_value.empty())
+            _timer.resetTimer();
+        else {
+            _timer.resetTimer(5, _timerFunctor);
+            _available->Show(false);
+        }
+    });
+
+    _input->Bind(wxEVT_TEXT_ENTER, [this] (wxCommandEvent& event) {
+        wxCommandEvent evt(EVENT_PASSWORD_FOCUS);
+        _input->ProcessWindowEvent(evt);
+    });
+}
+
+wxString lau::Pseudo::checkRequirements()
+{
+    wxString error;
+    wxString value = _input->GetValue();
+
+    if (!_isAvailable && !value.empty())
+        error +=  value + _(" is not available\n");
+    if (value.length() < 3)
+        error += "The pseudo should have at least 4 characters";
+    return error;
+}
+

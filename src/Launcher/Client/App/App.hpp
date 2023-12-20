@@ -6,6 +6,7 @@
 #include "Login.hpp"
 #include "ThreadPool.hpp"
 #include "Manager.hpp"
+#include "Loading.hpp"
 
 namespace lau {
     class App : public wxApp {
@@ -13,10 +14,19 @@ namespace lau {
             bool OnInit() override;
             void printer();
             void exitLogin();
+            void exitLoading(bool);
             Window *_myWindow;
             Login *_login;
+            Loading *_loading;
 
             void callHandlePseudo(const char *);
+            void connectToServer();
+
+        private:
+            void bindEvents();
+            void handlePseudoAvailability(const char *);
+
+
 
 
         private:
@@ -24,7 +34,6 @@ namespace lau {
             Manager _sender;
             
             //handler
-            void handlePseudoAvailability(const char *);
     };
 };
 

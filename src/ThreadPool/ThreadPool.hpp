@@ -31,6 +31,11 @@ namespace thp {
                         return;
                     }
                 }
+
+                // int ghshhgds(int, int)
+
+                // std::function<void ()> toLaunch =  bind (ghdhjf, 5, 6);
+                // toLaunch();
                 auto toLaunch = std::bind(std::forward<T>(func), std::forward<Args>(args)...);
                 _tasks.emplace_back(toLaunch);
                 _cond.notify_one();
@@ -71,11 +76,11 @@ namespace thp {
             void restart(int size);
             void pause();
             void resume();
-            void waitUntilFinished();
+            // void waitUntilFinished();
 
         private:
             std::atomic<int> _size;
-            std::atomic<int> _nbWorkers;
+            // std::atomic<int> _nbWorkers;
             std::atomic<bool> _isRunning;
             std::atomic<bool> _cancelThread;
             std::atomic<bool> _stopThread;

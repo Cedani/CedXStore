@@ -18,13 +18,17 @@ namespace lau {
             ~Pseudo();
 
             void initHideElements() final;
+            void showLoading(bool);
+            void handlePseudoAvailable(wxCommandEvent &);
+            void handlePseudoUnavailable(wxCommandEvent &);
+            wxString checkRequirements();
         private:
 
+            bool _isAvailable;
             void init();
             void initLoading();
             void initLabelAvailable();
-            void handlePseudoAvailable(wxCommandEvent &);
-            void handlePseudoUnavailable(wxCommandEvent &);
+            void bindEvents();
 
             tmr::myTimer _timer;
             std::function<void()> _timerFunctor;

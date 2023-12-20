@@ -12,14 +12,15 @@ lau::Manager::~Manager()
     
 }
 
-void lau::Manager::initClientLogin()
+bool lau::Manager::initClientLogin()
 {
     if (!_mainClient.connectToServer()) {
         std::cout << "Cant connect to server" << std::endl;
-        exit(EXIT_FAILURE); 
+        return false; 
     }
 
     std::cout << _mainClient.readMessage() << std::endl;
+    return true;
 }
 
 json lau::Manager::checkPseudoAvailability(const char *pseudo)

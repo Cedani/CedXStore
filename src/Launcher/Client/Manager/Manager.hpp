@@ -11,7 +11,7 @@ namespace lau {
             Manager();
             ~Manager();
 
-            void initClientLogin();
+            bool initClientLogin();
 
             //check if pseudo is availble
             nlohmann::json checkPseudoAvailability(const char *);

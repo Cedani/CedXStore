@@ -9,19 +9,24 @@ lau::Client::Client(): _sock(_ctx)
 
 bool lau::Client::connectToServer()
 {
-    std::ifstream endPointFile(TEMP_ENDPOINT);
+    try {
+        std::ifstream endPointFile(TEMP_ENDPOINT);
 
-    if (!endPointFile.is_open())
+        if (!endPointFile.is_open())
+            return false;
+        std::string port;
+        std::string hostName;
+        // int port;
+        std::getline(endPointFile, hostName);
+        std::getline(endPointFile, port);
+        boost::asio::ip::tcp::resolver resolver(_ctx);
+        boost::asio::ip::tcp::resolver::results_type endpoints= resolver.resolve(hostName, port);
+        boost::asio::connect(_sock, endpoints);
+        return true;
+    } catch (const boost::system::system_error& e) {
+        std::cout << "exception connect: " << e.code() << " " << e.what() << std::endl;
         return false;
-    std::string port;
-    std::string hostName;
-    // int port;
-    std::getline(endPointFile, hostName);
-    std::getline(endPointFile, port);
-    boost::asio::ip::tcp::resolver resolver(_ctx);
-    boost::asio::ip::tcp::resolver::results_type endpoints= resolver.resolve(hostName, port);
-    boost::asio::connect(_sock, endpoints);
-    return true;
+    }
 }
 
 json lau::Client::readMessage()

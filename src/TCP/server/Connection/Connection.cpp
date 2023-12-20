@@ -41,7 +41,7 @@ void tcp::Connection::readMessage()
             try {
                 {
                     std::unique_lock<std::shared_mutex> _lock(_mutex);
-                    parseRead();    
+                    parseRead();
                     if (_messageEnd) {
                         // _requests.push_back(json::parse(_finishedBuffer));
                         _messageEnd = false;

@@ -1,6 +1,6 @@
 #include "ThreadPool.hpp"
 
-thp::ThreadPool::ThreadPool(int size): _size(size), _nbWorkers(0), _isRunning(false), _cancelThread(false), _stopThread(false), _pauseThread(false)
+thp::ThreadPool::ThreadPool(int size): _size(size), _isRunning(false), _cancelThread(false), _stopThread(false), _pauseThread(false)
 {
 }
 
@@ -27,17 +27,16 @@ void thp::ThreadPool::run()
         if (_cancelThread.load() || (_stopThread.load() && !popped.load())) {
             return;
         } else {
-            _nbWorkers += 1;
-            {
-                std::unique_lock lock(_mutex);
-                _cond.notify_all();
-            }
+            // {
+            //     std::unique_lock lock(_mutex);
+            //     _cond.notify_all();
+            // }
             toLaunch();
-            _nbWorkers -= 1;
-            if (_tasks.size() == 0) {
-                std::unique_lock lock(_mutex);
-                _cond.notify_all();
-            }
+            // std::cout << "finished executing" << std::endl;
+            // if (_tasks.size() == 0) {
+            //     std::unique_lock lock(_mutex);
+            //     _cond.notify_all();
+            // }
         }
     }
 }
@@ -79,7 +78,7 @@ void thp::ThreadPool::cancel()
         _cond.notify_all();
         _tasks.clear();
     }
-    for (auto &t: _threads)
+    for (std::thread &t: _threads)
         t.join();
 }
 
@@ -89,7 +88,7 @@ void thp::ThreadPool::terminate()
         return;
     _stopThread.store(true);
     _isRunning.store(false);
-    {
+    {   
         std::shared_lock<std::shared_mutex> lock(_mutex);
         _cond.notify_all();
     }
@@ -133,13 +132,13 @@ void thp::ThreadPool::resume()
     // std::cout << "resumed" << std::endl;
 }
 
-void thp::ThreadPool::waitUntilFinished()
-{
-    {
-        std::unique_lock lock(_mutex);
-        _cond.wait(lock, [this](){
-            return (_nbWorkers == 0);
-        });
-    }
-    std::cout << "workers has finished" << std::endl;
-}
+// void thp::ThreadPool::waitUntilFinished()
+// {
+//     {
+//         std::unique_lock lock(_mutex);
+//         _cond.wait(lock, [this](){
+//             return (_nbWorkers == 0);
+//         });
+//     }
+//     std::cout << "workers has finished" << std::endl;
+// }

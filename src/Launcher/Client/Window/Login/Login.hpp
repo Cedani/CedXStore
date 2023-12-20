@@ -7,7 +7,9 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/hyperlink.h>
-// #include "myButton.hpp"
+#include <wx/display.h>
+#include <wx/time.h>
+#include <wx/scrolwin.h>
 #include "Pseudo.hpp"
 #include "Password.hpp"
 #include "myButton.hpp"
@@ -21,38 +23,47 @@ namespace lau {
             ~Login();
 
             void init();
-            void showConfirm(bool);
-            wxString getPseudo();
 
         private:
             void OnExit(wxCommandEvent &);
             void OnClose(wxCloseEvent &);
-            // void OnChange(wxCommandEvent &);
     
-            void sendCustomEvent(wxEventType);
+            void bindEvents();
+            void initErrorField();
             void handleAlreadySignupLogin(wxHyperlinkEvent &);
-            // void showLoginOrSignup();
+            void clickLogin();
+            void clickSignup();
 
 
         private:
-            // Menus
+            wxPanel *_contPanel;
+            wxBoxSizer *_contBox;
+            // wxBoxSizer *_frameSizer;
+            // // loading panel
+            // wxPanel *_loadingPanel;
+            // wxAnimationCtrl *_loading;
+            // wxBoxSizer *_boxLoading;
 
+            // scroller
+            // wxScrolledWindow *_scrWin;
 
             //Form
-            wxPanel *_mainPanel;
+            wxScrolledWindow *_mainPanel;
             wxBoxSizer *_mainBox;
-            // wxTextCtrl *_username;
+
 
             //Error Field
             wxStaticText *_errorField;
+            wxPanel *_errorPanel;
+            wxBoxSizer *_errorSizer;
 
             // Login
             wxStaticText *_loginText;
-            Label *_pseudo;
-            Label *_password;
+            Pseudo *_pseudo = nullptr;
+            Password *_password = nullptr;
 
             // Signup
-            Label *_confirmPassword;
+            Password *_confirmPassword = nullptr;
 
             // text to change to signup
             wxGridSizer *_grid;

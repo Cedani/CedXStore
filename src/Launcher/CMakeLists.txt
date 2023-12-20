@@ -13,8 +13,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Client
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Manager
-    ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/SideMenu
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Loading
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/SideMenu
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Label
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Pseudo
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Password
@@ -27,6 +28,7 @@ set(SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/myWindow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/myButton.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Login.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Loading/Loading.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Label/Label.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/SideMenu/SideMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Client/Window/Login/Pseudo/Pseudo.cpp

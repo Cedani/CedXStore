@@ -77,7 +77,7 @@ int main(void)
     // // if (!server.start())
     // //     exit(EXIT_FAILURE);
     // // // std::chrono::duration<float> mSeconds;
-    // thp::ThreadPool thpo(10);
+    thp::ThreadPool thpo(10);
     // thpo.init();
     // thpo.addNewTask(testInt, 10);
     // thpo.addNewTask(testInt, 20);
