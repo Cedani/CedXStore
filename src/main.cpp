@@ -7,7 +7,7 @@
 #include "Config.h"
 #include <nlohmann/json.hpp>
 #include <time.h>
-#include "myTimer.hpp"
+// #include "myTimer.hpp"
 
 using nlohmann::json;
 
@@ -77,7 +77,7 @@ int main(void)
     // // if (!server.start())
     // //     exit(EXIT_FAILURE);
     // // // std::chrono::duration<float> mSeconds;
-    thp::ThreadPool thpo(10);
+    // thp::ThreadPool thpo(10);
     // thpo.init();
     // thpo.addNewTask(testInt, 10);
     // thpo.addNewTask(testInt, 20);
@@ -103,21 +103,21 @@ int main(void)
     //     // }
     // }
 
-    tmr::myTimer timer;
-    tmr::myTimer timer2;
-    std::atomic_bool closeProgram = false;
+    // tmr::myTimer timer;
+    // tmr::myTimer timer2;
+    // std::atomic_bool closeProgram = false;
 
-    timer.startTimer(5, [&closeProgram]() {
-        std::cout << "ca marche mon reuf" << std::endl;
-    });
+    // timer.startTimer(5, [&closeProgram]() {
+    //     std::cout << "ca marche mon reuf" << std::endl;
+    // });
 
-    timer2.startTimer(3, [&timer, &closeProgram]() {
-        std::cout << "bah non on reset tout ca mon reuf" << std::endl;
-        timer.resetTimer(5, [&closeProgram]{
-            std::cout  << "Bah on a change mon reuf" << std::endl;
-            closeProgram = true;
-        });
-    });
+    // timer2.startTimer(3, [&timer, &closeProgram]() {
+    //     std::cout << "bah non on reset tout ca mon reuf" << std::endl;
+    //     timer.resetTimer(5, [&closeProgram]{
+    //         std::cout  << "Bah on a change mon reuf" << std::endl;
+    //         closeProgram = true;
+    //     });
+    // });
 
-    while(!closeProgram);
+    // while(!closeProgram);
 }

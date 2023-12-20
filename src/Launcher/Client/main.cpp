@@ -1,9 +1,4 @@
-#ifdef _WIN32
 #include <iostream>
-#include "App/App.hpp"
-#include "Client.hpp"
-
-using nlohmann::json;
 
 int main(int argc, char **argv)
 {
@@ -25,7 +20,4 @@ int main(int argc, char **argv)
     //     }.dump() + "\r\n");
     //     std::cout << myCLi.readMessage() << std::endl;
     // // }
-    lau::App *_myapp = new lau::App;
-    return (wxEntry(argc, argv));
 }
-#endif
