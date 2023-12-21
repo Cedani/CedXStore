@@ -16,7 +16,6 @@ bool lau::Client::connectToServer()
             return false;
         std::string port;
         std::string hostName;
-        // int port;
         std::getline(endPointFile, hostName);
         std::getline(endPointFile, port);
         boost::asio::ip::tcp::resolver resolver(_ctx);

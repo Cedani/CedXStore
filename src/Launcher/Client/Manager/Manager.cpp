@@ -1,37 +1,17 @@
 #include "Manager.hpp"
 
-using nlohmann::json;
-
-lau::Manager::Manager()
+lau::Manager::Manager(): _threadPool(15)
 {
 
 }
 
-lau::Manager::~Manager()
+lau::Manager &lau::Manager::getInstance()
 {
-    
+    static Manager manager;
+    return manager;
 }
 
-bool lau::Manager::initClientLogin()
+thp::ThreadPool &lau::Manager::getThreadpool()
 {
-    if (!_mainClient.connectToServer()) {
-        std::cout << "Cant connect to server" << std::endl;
-        return false; 
-    }
-
-    std::cout << _mainClient.readMessage() << std::endl;
-    return true;
-}
-
-json lau::Manager::checkPseudoAvailability(const char *pseudo)
-{
-    json result = json{
-        {"command", "pseudoAvailability"},
-        {"data", {
-            {"pseudo", pseudo}
-        }}
-    };
-
-    _mainClient.writeMessage(result.dump());
-    return _mainClient.readMessage();
+    return _threadPool;
 }
